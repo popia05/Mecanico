@@ -1,0 +1,437 @@
+/* ========================================
+   RESET Y VARIABLES DE COLORES
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --sidebar-bg: #1e1e2d;
+    --sidebar-hover: #2a2a3d;
+    --fondo: #f0f2f5;
+    --blanco: #ffffff;
+    --texto: #333333;
+    --texto-claro: #666666;
+    --rojo: #dc2626;
+    --verde: #16a34a;
+    --azul: #2563eb;
+    --rosa: #ec4899;
+    --borde: #e5e7eb;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--fondo);
+    color: var(--texto);
+    line-height: 1.6;
+}
+
+/* ========================================
+   CONTENEDOR PRINCIPAL
+   ======================================== */
+.contenedor {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ========================================
+   SIDEBAR (MENU LATERAL)
+   ======================================== */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: white;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar-logo {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo-icono {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--rojo), #991b1b);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-logo-icono i {
+    color: white;
+    font-size: 18px;
+}
+
+.sidebar-logo-texto h2 {
+    font-size: 16px;
+    color: var(--rojo);
+    font-weight: 600;
+}
+
+.sidebar-logo-texto span {
+    font-size: 12px;
+    color: #888;
+}
+
+.sidebar-nav {
+    padding: 15px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #a0a0a0;
+    text-decoration: none;
+    gap: 12px;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background-color: var(--sidebar-hover);
+    color: white;
+}
+
+.nav-item.activo {
+    background-color: var(--sidebar-hover);
+    color: white;
+    border-left-color: var(--rojo);
+}
+
+.nav-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.nav-item span {
+    font-size: 14px;
+}
+
+.nav-item .flecha {
+    margin-left: auto;
+    font-size: 12px;
+}
+
+.submenu {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.submenu .nav-item {
+    padding-left: 52px;
+    font-size: 13px;
+}
+
+/* ========================================
+   CONTENIDO PRINCIPAL
+   ======================================== */
+.contenido {
+    flex: 1;
+    margin-left: 260px;
+}
+
+/* ========================================
+   CABECERA
+   ======================================== */
+.cabecera {
+    background-color: var(--blanco);
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cabecera-titulo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-flecha {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--borde);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--texto-claro);
+}
+
+.cabecera-titulo h1 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.cabecera-acciones {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.cabecera-acciones button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--texto-claro);
+    font-size: 18px;
+    padding: 5px;
+}
+
+.avatar-mini {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--rosa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+}
+
+/* ========================================
+   PAGINA Y GRID
+   ======================================== */
+.pagina {
+    padding: 30px;
+}
+
+.grid-dos-columnas {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 30px;
+}
+
+/* ========================================
+   TARJETAS
+   ======================================== */
+.tarjeta {
+    background-color: var(--blanco);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+}
+
+.tarjeta-actividad {
+    padding: 0;
+}
+
+/* ========================================
+   PERFIL
+   ======================================== */
+.perfil-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--rosa), #f472b6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: bold;
+    margin: 0 auto 20px;
+}
+
+.perfil-nombre {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--azul);
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.perfil-rol {
+    color: var(--texto-claro);
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.perfil-info-titulo {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--texto);
+    margin-bottom: 20px;
+}
+
+.perfil-info-lista {
+    display: flex;
+    flex-direction: column;
+}
+
+.perfil-info-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--borde);
+}
+
+.perfil-info-item:last-child {
+    border-bottom: none;
+}
+
+.perfil-info-item i {
+    width: 30px;
+    color: var(--texto-claro);
+    font-size: 14px;
+}
+
+.perfil-info-item .label {
+    color: var(--texto-claro);
+    font-size: 14px;
+    min-width: 120px;
+}
+
+.perfil-info-item .valor {
+    margin-left: auto;
+    text-align: right;
+}
+
+.perfil-info-item .valor a {
+    color: var(--azul);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.perfil-info-item .valor a:hover {
+    text-decoration: underline;
+}
+
+.icono-pequeno {
+    font-size: 10px;
+    margin-left: 3px;
+}
+
+/* ========================================
+   BADGES (ETIQUETAS)
+   ======================================== */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge-activo {
+    background-color: rgba(22, 163, 74, 0.1);
+    color: var(--verde);
+}
+
+.badge-pendiente {
+    background-color: rgba(220, 38, 38, 0.1);
+    color: var(--rojo);
+}
+
+/* ========================================
+   ACTIVIDAD
+   ======================================== */
+.actividad-header {
+    padding: 20px 25px;
+    border-bottom: 2px solid var(--azul);
+    text-align: center;
+}
+
+.actividad-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.actividad-lista {
+    padding: 20px 25px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.actividad-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--borde);
+}
+
+.actividad-item:last-child {
+    border-bottom: none;
+}
+
+.actividad-icono {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--azul);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.actividad-contenido {
+    flex: 1;
+}
+
+.actividad-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 5px;
+}
+
+.actividad-titulo {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.actividad-fecha {
+    font-size: 12px;
+    color: var(--texto-claro);
+}
+
+.actividad-descripcion {
+    background-color: var(--fondo);
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--texto-claro);
+    margin-top: 10px;
+    border-left: 3px solid var(--azul);
+}
+
+/* ========================================
+   RESPONSIVE (PANTALLAS PEQUENAS)
+   ======================================== */
+@media (max-width: 992px) {
+    .grid-dos-columnas {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+
+    .contenido {
+        margin-left: 0;
+    }
+
+    .pagina {
+        padding: 20px;
+    }
+}

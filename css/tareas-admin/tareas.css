@@ -1,0 +1,384 @@
+/* ========================================
+   RESET Y VARIABLES DE COLORES
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --sidebar-bg: #1e1e2d;
+    --sidebar-hover: #2a2a3d;
+    --fondo: #f0f2f5;
+    --blanco: #ffffff;
+    --texto: #333333;
+    --texto-claro: #666666;
+    --rojo: #dc2626;
+    --verde: #16a34a;
+    --azul: #2563eb;
+    --rosa: #ec4899;
+    --naranja: #f97316;
+    --borde: #e5e7eb;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--fondo);
+    color: var(--texto);
+    line-height: 1.6;
+}
+
+/* ========================================
+   CONTENEDOR PRINCIPAL
+   ======================================== */
+.contenedor {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ========================================
+   SIDEBAR (MENU LATERAL)
+   ======================================== */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: white;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar-logo {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo-icono {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--rojo), #991b1b);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-logo-icono i {
+    color: white;
+    font-size: 18px;
+}
+
+.sidebar-logo-texto h2 {
+    font-size: 16px;
+    color: var(--rojo);
+    font-weight: 600;
+}
+
+.sidebar-logo-texto span {
+    font-size: 12px;
+    color: #888;
+}
+
+.sidebar-nav {
+    padding: 15px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #a0a0a0;
+    text-decoration: none;
+    gap: 12px;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background-color: var(--sidebar-hover);
+    color: white;
+}
+
+.nav-item.activo {
+    background-color: var(--sidebar-hover);
+    color: white;
+    border-left-color: var(--rojo);
+}
+
+.nav-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.nav-item span {
+    font-size: 14px;
+}
+
+.nav-item .flecha {
+    margin-left: auto;
+    font-size: 12px;
+}
+
+.submenu {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.submenu .nav-item {
+    padding-left: 52px;
+    font-size: 13px;
+}
+
+/* ========================================
+   CONTENIDO PRINCIPAL
+   ======================================== */
+.contenido {
+    flex: 1;
+    margin-left: 260px;
+}
+
+/* ========================================
+   CABECERA
+   ======================================== */
+.cabecera {
+    background-color: var(--blanco);
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cabecera-titulo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.cabecera-titulo h1 {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.cabecera-acciones {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.cabecera-acciones button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--texto-claro);
+    font-size: 18px;
+    padding: 5px;
+}
+
+.avatar-mini {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--rosa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+}
+
+/* ========================================
+   PAGINA
+   ======================================== */
+.pagina {
+    padding: 30px;
+}
+
+/* ========================================
+   TABS (PESTANAS)
+   ======================================== */
+.tabs {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--borde);
+    padding-bottom: 15px;
+}
+
+.tab-indicador {
+    display: flex;
+    gap: 4px;
+}
+
+.tab-indicador span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--naranja);
+}
+
+.tab {
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--texto-claro);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.tab:hover {
+    color: var(--texto);
+}
+
+.tab.activo {
+    color: var(--azul);
+    border-bottom-color: var(--azul);
+    font-weight: 500;
+}
+
+/* ========================================
+   TIMELINE DE TAREAS
+   ======================================== */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--borde);
+}
+
+.tarea-item {
+    position: relative;
+    margin-bottom: 25px;
+    padding-left: 30px;
+}
+
+.tarea-icono {
+    position: absolute;
+    left: -22px;
+    top: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--naranja), #fb923c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    z-index: 1;
+}
+
+.tarea-contenido {
+    background-color: var(--blanco);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.tarea-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.tarea-info h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--texto);
+    margin-bottom: 4px;
+}
+
+.tarea-info .fecha {
+    font-size: 12px;
+    color: var(--texto-claro);
+}
+
+.tarea-descripcion {
+    background-color: var(--fondo);
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--texto-claro);
+    line-height: 1.6;
+}
+
+/* ========================================
+   BADGES (ETIQUETAS)
+   ======================================== */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge-pendiente {
+    background-color: rgba(220, 38, 38, 0.1);
+    color: var(--rojo);
+}
+
+.badge-proceso {
+    background-color: rgba(249, 115, 22, 0.1);
+    color: var(--naranja);
+}
+
+.badge-terminado {
+    background-color: rgba(22, 163, 74, 0.1);
+    color: var(--verde);
+}
+
+/* ========================================
+   RESPONSIVE (PANTALLAS PEQUENAS)
+   ======================================== */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+
+    .contenido {
+        margin-left: 0;
+    }
+
+    .pagina {
+        padding: 20px;
+    }
+
+    .tabs {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .timeline {
+        padding-left: 20px;
+    }
+
+    .timeline::before {
+        left: 10px;
+    }
+
+    .tarea-item {
+        padding-left: 20px;
+    }
+
+    .tarea-icono {
+        left: -27px;
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+}

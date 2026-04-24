@@ -1,0 +1,313 @@
+<!-- apartado de nota de remisión -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota De Remision - Auto Master</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../CSS/estilos-generales.css">
+    <style>
+        .timeline { position: relative; padding-left: 30px; }
+        .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(to bottom, var(--borde) 0, var(--borde) 5px, transparent 5px, transparent 10px); }
+        .trabajo-item { position: relative; margin-bottom: 30px; padding-left: 30px; }
+        .trabajo-icono { position: absolute; left: -22px; top: 0; width: 36px; height: 36px; background-color: var(--rojo); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+        .trabajo-contenido { background-color: var(--fondo); border-radius: 10px; padding: 20px; border: 1px solid var(--borde); }
+        .trabajo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .trabajo-vehiculo { font-size: 16px; font-weight: 600; }
+        .trabajo-fecha { font-size: 12px; color: var(--texto-claro); margin-top: 2px; }
+        .trabajo-descripcion { background-color: var(--blanco); border-left: 3px solid var(--borde); padding: 12px 15px; margin-bottom: 15px; font-size: 14px; color: var(--texto-claro); border-radius: 0 8px 8px 0; }
+        .vista-nota { display: none; }
+        .vista-nota.activo { display: block; }
+        .vista-lista.oculto { display: none; }
+        .nota-contenedor { display: flex; gap: 20px; max-width: 1000px; }
+        .nota-formulario { flex: 1; background-color: var(--blanco); border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); padding: 25px; }
+        .nota-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--borde); }
+        .nota-header-izq { display: flex; align-items: center; gap: 10px; }
+        .btn-volver { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--borde); background: var(--blanco); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--texto-claro); }
+        .negocio-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--borde); }
+        .negocio-nombre { font-size: 18px; font-weight: 700; }
+        .campo-nota { margin-bottom: 18px; }
+        .campo-nota label { display: block; font-size: 13px; font-weight: 500; color: var(--texto-claro); margin-bottom: 6px; }
+        .campo-nota .valor { font-size: 15px; color: var(--texto); padding: 10px 0; border-bottom: 1px solid var(--borde); }
+        .descripcion-servicio { background-color: var(--fondo); border-radius: 8px; padding: 15px; font-size: 14px; line-height: 1.8; white-space: pre-line; }
+        .fechas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .fecha-campo { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background-color: var(--fondo); border-radius: 8px; border: 1px solid var(--borde); }
+        .fecha-campo input { border: none; background: transparent; font-size: 14px; flex: 1; }
+        .nota-acciones { display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--borde); }
+        .nota-lateral { width: 80px; display: flex; flex-direction: column; gap: 15px; }
+        .validacion-item { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--borde); background: var(--blanco); }
+        .validacion-item.completado { border-color: var(--verde); color: var(--verde); }
+        .validacion-item.error { border-color: var(--rojo); color: var(--rojo); }
+        .tarjeta-total { background: linear-gradient(135deg, var(--rojo), #991b1b); border-radius: 12px; padding: 15px; color: white; text-align: center; margin-top: auto; width: 140px; margin-left: -60px; }
+        .tarjeta-total-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 10px; }
+        .tarjeta-total-monto { font-size: 28px; font-weight: 700; margin-bottom: 15px; }
+        .btn-pagar { width: 100%; padding: 10px; background-color: rgba(0, 0, 0, 0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-img">
+                    <i class="fas fa-wrench"></i>
+                </div>
+                <div class="sidebar-logo-texto">
+                    <h2>Menu</h2>
+                    <span>Categorias</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="panel.html" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Panel</span>
+                </a>
+
+                <div class="nav-item submenu-toggle" onclick="toggleSubmenu('perfil')">
+                    <i class="fas fa-user"></i>
+                    <span>Perfil</span>
+                    <i class="fas fa-chevron-down flecha" id="flecha-perfil"></i>
+                </div>
+                <div class="submenu" id="submenu-perfil">
+                    <a href="informacion.html" class="nav-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Informacion</span>
+                    </a>
+                    <a href="tareas-asignadas.html" class="nav-item">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Ver Tareas Asignadas</span>
+                    </a>
+                </div>
+
+                <a href="gestion-ordenes.html" class="nav-item">
+                    <i class="fas fa-tasks"></i>
+                    <span>Gestion de Ordenes</span>
+                </a>
+
+                <a href="inventario.html" class="nav-item">
+                    <i class="fas fa-wrench"></i>
+                    <span>Ver Inventario</span>
+                </a>
+
+                <a href="nota-remision.html" class="nav-item activo">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Nota De Remision</span>
+                </a>
+
+                <a href="auditoria.html" class="nav-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Auditoria (Admin)</span>
+                </a>
+
+                <a href="factura.html" class="nav-item">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Factura</span>
+                </a>
+
+                <a href="configuracion.html" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuracion</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-usuario">
+                <div class="sidebar-usuario-avatar">DG</div>
+                <div class="sidebar-usuario-info">
+                    <h4>Daniel G.</h4>
+                    <span>Mecanico</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO -->
+        <main class="contenido">
+            <header class="cabecera">
+                <div class="cabecera-titulo">
+                    <h1>Notas De Remision</h1>
+                </div>
+                <div class="cabecera-acciones">
+                    <button><i class="fas fa-search"></i></button>
+                    <button><i class="fas fa-bell"></i></button>
+                    <button><i class="fas fa-question-circle"></i></button>
+                </div>
+            </header>
+
+            <div class="pagina">
+                
+                <!-- VISTA 1: Lista de trabajos terminados -->
+                <div class="vista-lista" id="vista-lista">
+                    <div class="pagina-titulo">
+                        <h2>Notas De Remision</h2>
+                    </div>
+
+                    <div class="tarjeta">
+                        <div class="tarjeta-header" style="border-bottom: 3px solid var(--rojo);">
+                            <h3 style="color: var(--rojo);">Tareas Listas Para Remision</h3>
+                        </div>
+                        <div class="tarjeta-body">
+                            <div class="timeline" id="lista-trabajos">
+                                <!-- Trabajo 1 -->
+                                <div class="trabajo-item">
+                                    <div class="trabajo-icono"><i class="fas fa-tools"></i></div>
+                                    <div class="trabajo-contenido">
+                                        <div class="trabajo-header">
+                                            <div>
+                                                <div class="trabajo-vehiculo">Nissan Altima 2019</div>
+                                                <div class="trabajo-fecha">14:30 - Sep 28, 2026</div>
+                                            </div>
+                                            <span class="badge badge-verde">Terminado</span>
+                                        </div>
+                                        <div class="trabajo-descripcion">Cambio de amortiguadores a carro Nissan Altima, motor 4 cilindros.</div>
+                                        <button class="btn btn-primario" style="float: right;" onclick="abrirNota(1)">Agregar Nota</button>
+                                    </div>
+                                </div>
+
+                                <!-- Trabajo 2 -->
+                                <div class="trabajo-item">
+                                    <div class="trabajo-icono"><i class="fas fa-tools"></i></div>
+                                    <div class="trabajo-contenido">
+                                        <div class="trabajo-header">
+                                            <div>
+                                                <div class="trabajo-vehiculo">Ford F-150 2022</div>
+                                                <div class="trabajo-fecha">14:00 - Sep 10, 2026</div>
+                                            </div>
+                                            <span class="badge badge-verde">Terminado</span>
+                                        </div>
+                                        <div class="trabajo-descripcion">Se realizo servicio de mantenimiento a camioneta Ford F-150, motor V8.</div>
+                                        <button class="btn btn-primario" style="float: right;" onclick="abrirNota(2)">Agregar Nota</button>
+                                    </div>
+                                </div>
+
+                                <!-- Trabajo 3 -->
+                                <div class="trabajo-item">
+                                    <div class="trabajo-icono"><i class="fas fa-tools"></i></div>
+                                    <div class="trabajo-contenido">
+                                        <div class="trabajo-header">
+                                            <div>
+                                                <div class="trabajo-vehiculo">Dodge Atitud 2020</div>
+                                                <div class="trabajo-fecha">10:00 - Sep 05, 2026</div>
+                                            </div>
+                                            <span class="badge badge-verde">Terminado</span>
+                                        </div>
+                                        <div class="trabajo-descripcion">Servicio completo de afinacion mayor con cambio de bujias y filtros.</div>
+                                        <button class="btn btn-primario" style="float: right;" onclick="abrirNota(3)">Agregar Nota</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA 2: Formulario de nota -->
+                <div class="vista-nota" id="vista-nota">
+                    <div class="nota-contenedor">
+                        <div class="nota-formulario">
+                            <div class="nota-header">
+                                <div class="nota-header-izq">
+                                    <button class="btn-volver" onclick="volverALista()"><i class="fas fa-arrow-left"></i></button>
+                                    <h3>Nota de remision</h3>
+                                </div>
+                                <button class="btn btn-primario" style="padding: 8px 16px;"><i class="fas fa-edit"></i> Editar</button>
+                            </div>
+
+                            <div class="negocio-info">
+                                <div class="negocio-nombre">Auto Master</div>
+                                <div style="width: 80px; height: 50px; background: var(--fondo); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-car" style="font-size: 24px; color: var(--rojo);"></i>
+                                </div>
+                            </div>
+
+                            <div class="campo-nota">
+                                <label>Cliente:</label>
+                                <div class="valor" id="nota-cliente">Alonso Martinez Osorio</div>
+                            </div>
+
+                            <div class="campo-nota">
+                                <label>Placas:</label>
+                                <div class="valor" id="nota-placas">V4HS T7JW</div>
+                            </div>
+
+                            <div class="campo-nota">
+                                <label>Asignacion de personal:</label>
+                                <div class="valor" id="nota-mecanico">Mecanico 1</div>
+                            </div>
+
+                            <div class="campo-nota">
+                                <label>Descripcion del servicio</label>
+                                <div class="descripcion-servicio" id="nota-descripcion">
+1 Afinacion Mayor: Cambio de aceite sintetico, filtros (aceite/aire) y bujias. $2,200
+1 Limpieza de Inyectores: Lavado por presurizacion y cuerpo de aceleracion. $650
+1 Revision de Frenos: Inspeccion de balatas y ajuste de freno de mano. $400
+Observaciones: Se recomienda cambio de llantas delanteras en 3,000 km.
+Garantia: 30 dias en mano de obra.
+                                </div>
+                            </div>
+
+                            <div class="fechas-grid">
+                                <div class="campo-nota">
+                                    <label>Fecha de ingreso *</label>
+                                    <div class="fecha-campo">
+                                        <i class="far fa-calendar"></i>
+                                        <input type="date" id="nota-fecha-ingreso" value="2026-02-10">
+                                    </div>
+                                </div>
+                                <div class="campo-nota">
+                                    <label>Fecha de salida</label>
+                                    <div class="fecha-campo">
+                                        <i class="far fa-calendar"></i>
+                                        <input type="date" id="nota-fecha-salida" value="2026-02-15">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="nota-acciones">
+                                <button class="btn btn-outline"><i class="fas fa-file-pdf"></i> PDF</button>
+                                <button class="btn btn-secundario" onclick="volverALista()">Cancelar</button>
+                                <button class="btn btn-outline"><i class="far fa-save"></i> Guardar nota</button>
+                            </div>
+                        </div>
+
+                        <div class="nota-lateral">
+                            <div class="validacion-item completado"><i class="fas fa-check"></i></div>
+                            <div class="validacion-item completado"><i class="fas fa-car"></i></div>
+                            <div class="validacion-item completado"><i class="fas fa-user"></i></div>
+                            <div class="validacion-item completado"><i class="fas fa-edit"></i></div>
+                            <div class="validacion-item completado"><i class="fas fa-check"></i></div>
+                            <div class="validacion-item error"><i class="fas fa-times"></i></div>
+
+                            <div class="tarjeta-total">
+                                <div class="tarjeta-total-header">
+                                    <span>TOTAL</span>
+                                    <span id="nota-fecha-actual">05/03/2026</span>
+                                </div>
+                                <div class="tarjeta-total-monto" id="nota-total">$3,250</div>
+                                <button class="btn-pagar">PAGAR</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <script src="../JS/menu.js"></script>
+    <script>
+        function abrirNota(id) {
+            document.getElementById('vista-lista').classList.add('oculto');
+            document.getElementById('vista-nota').classList.add('activo');
+        }
+
+        function volverALista() {
+            document.getElementById('vista-lista').classList.remove('oculto');
+            document.getElementById('vista-nota').classList.remove('activo');
+        }
+    </script>
+</body>
+</html>
