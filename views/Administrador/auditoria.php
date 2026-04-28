@@ -1,0 +1,325 @@
+<?php
+// auditoria.php — se incluye desde index.php
+// Solo contiene el contenido interno de la página, sin <html>, <head> ni <body>
+?>
+
+<style>
+    .banner-admin { background: linear-gradient(135deg, var(--rojo), #991b1b); border-radius: 12px; padding: 30px; color: white; display: flex; align-items: center; gap: 20px; margin-bottom: 25px; }
+    .banner-icono { width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .banner-texto h2 { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
+    .banner-texto p  { font-size: 14px; opacity: 0.9; }
+
+    .tabs-nav { display: flex; border-bottom: 1px solid var(--borde); margin-bottom: 20px; }
+    .tab-btn  { display: flex; align-items: center; gap: 8px; padding: 15px 20px; background: none; border: none; cursor: pointer; font-size: 14px; color: var(--texto-claro); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .tab-btn:hover  { color: var(--texto); }
+    .tab-btn.activo { color: var(--rojo); border-bottom-color: var(--rojo); }
+
+    .tab-contenido        { display: none; }
+    .tab-contenido.activo { display: block; }
+
+    .barra-filtros { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .btn-filtro        { padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid var(--borde); background: var(--blanco); }
+    .btn-filtro.activo { background: var(--rojo); color: white; border-color: var(--rojo); }
+
+    .campo-busqueda { display: flex; align-items: center; background: var(--blanco); border: 1px solid var(--borde); border-radius: 8px; padding: 0 12px; min-width: 250px; }
+    .campo-busqueda input { flex: 1; border: none; outline: none; padding: 10px 0; font-size: 14px; }
+
+    .icono-tipo { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; background: rgba(37,99,235,0.1); color: var(--azul); }
+
+    .config-grid    { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
+    .config-seccion { background: var(--fondo); border-radius: 12px; padding: 20px; }
+    .config-seccion h4 { font-size: 16px; font-weight: 600; margin-bottom: 15px; }
+    .config-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--borde); }
+    .config-item:last-child { border-bottom: none; }
+
+    .estado-punto { display: flex; align-items: center; gap: 6px; }
+    .punto       { width: 8px; height: 8px; border-radius: 50%; }
+    .punto.verde { background: var(--verde); }
+    .punto.gris  { background: #9ca3af; }
+</style>
+
+<!-- Banner Admin -->
+<div class="banner-admin">
+    <div class="banner-icono"><i class="fas fa-shield-alt"></i></div>
+    <div class="banner-texto">
+        <h2>Panel de Administrador</h2>
+        <p>Control total del sistema - Fuel Injection Auto Master</p>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="tarjetas-resumen">
+    <div class="tarjeta-resumen">
+        <div class="tarjeta-icono morado"><i class="fas fa-chart-line"></i></div>
+        <div class="tarjeta-info"><h3>12</h3><span>Registros totales</span></div>
+    </div>
+    <div class="tarjeta-resumen">
+        <div class="tarjeta-icono verde"><i class="fas fa-file-alt"></i></div>
+        <div class="tarjeta-info"><h3>1</h3><span>Ordenes hoy</span></div>
+    </div>
+    <div class="tarjeta-resumen">
+        <div class="tarjeta-icono azul"><i class="fas fa-users"></i></div>
+        <div class="tarjeta-info"><h3>4</h3><span>Usuarios activos</span></div>
+    </div>
+    <div class="tarjeta-resumen">
+        <div class="tarjeta-icono amarillo"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="tarjeta-info"><h3>2</h3><span>Alertas activas</span></div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tarjeta">
+    <div class="tabs-nav">
+        <button class="tab-btn activo" onclick="cambiarTab('auditoria')">
+            <i class="fas fa-shield-alt"></i> Auditoria
+        </button>
+        <button class="tab-btn" onclick="cambiarTab('empleados')">
+            <i class="fas fa-users"></i> Empleados
+        </button>
+        <button class="tab-btn" onclick="cambiarTab('ordenes')">
+            <i class="fas fa-file-alt"></i> Todas las Ordenes
+        </button>
+        <button class="tab-btn" onclick="cambiarTab('inventario')">
+            <i class="fas fa-wrench"></i> Inventario
+        </button>
+        <button class="tab-btn" onclick="cambiarTab('configuracion')">
+            <i class="fas fa-cog"></i> Configuracion
+        </button>
+    </div>
+
+    <!-- Tab: Auditoria -->
+    <div class="tab-contenido activo" id="tab-auditoria">
+        <div style="padding: 20px;">
+            <div class="barra-filtros">
+                <button class="btn-filtro activo">Todos</button>
+                <button class="btn-filtro">Orden</button>
+                <button class="btn-filtro">Inventario</button>
+                <button class="btn-filtro">Usuario</button>
+                <button class="btn-filtro">Sistema</button>
+                <div class="campo-busqueda">
+                    <i class="fas fa-search" style="color: var(--texto-claro);"></i>
+                    <input type="text" placeholder="Buscar en registros...">
+                </div>
+                <div style="margin-left: auto; display: flex; gap: 10px;">
+                    <button class="btn btn-secundario"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                    <button class="btn btn-primario"><i class="fas fa-download"></i> Exportar</button>
+                </div>
+            </div>
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>TIPO</th><th>ACCION</th><th>DESCRIPCION</th>
+                        <th>USUARIO</th><th>FECHA</th><th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><div class="icono-tipo"><i class="fas fa-file-alt"></i></div></td>
+                        <td><strong>Creacion</strong></td>
+                        <td>Se creo nueva orden ORD-001</td>
+                        <td><i class="fas fa-user"></i> Admin Sistema</td>
+                        <td><i class="far fa-clock"></i> Mar 03, 2026 - 09:00</td>
+                        <td><i class="fas fa-globe"></i> 192.168.1.100</td>
+                    </tr>
+                    <tr>
+                        <td><div class="icono-tipo"><i class="fas fa-file-alt"></i></div></td>
+                        <td><strong>Modificacion</strong></td>
+                        <td>Se cambio estado de ORD-002 a En Progreso</td>
+                        <td><i class="fas fa-user"></i> Daniel Garcia</td>
+                        <td><i class="far fa-clock"></i> Mar 02, 2026 - 14:35</td>
+                        <td><i class="fas fa-globe"></i> 192.168.1.105</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab: Empleados -->
+    <div class="tab-contenido" id="tab-empleados">
+        <div style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h3>Gestion de Empleados</h3>
+                <button class="btn btn-primario"><i class="fas fa-user-plus"></i> Nuevo Empleado</button>
+            </div>
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>EMPLEADO</th><th>ROL</th><th>CONTACTO</th>
+                        <th>ESTADO</th><th>ORDENES</th><th>ULTIMA ACTIVIDAD</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="avatar rosa">DG</div>
+                                <strong>Daniel Garcia Olivas</strong>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-gris">Mecanico</span></td>
+                        <td>
+                            daniel@automaster.com
+                            <br><small style="color: var(--texto-claro);">(430) 065-7387</small>
+                        </td>
+                        <td><div class="estado-punto"><span class="punto verde"></span> Activo</div></td>
+                        <td><strong>156</strong></td>
+                        <td>Mar 03, 2026 - 08:00</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="avatar azul">RM</div>
+                                <strong>Roberto Martinez</strong>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-gris">Mecanico</span></td>
+                        <td>
+                            roberto@automaster.com
+                            <br><small style="color: var(--texto-claro);">(430) 065-7388</small>
+                        </td>
+                        <td><div class="estado-punto"><span class="punto verde"></span> Activo</div></td>
+                        <td><strong>142</strong></td>
+                        <td>Mar 02, 2026 - 17:30</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab: Todas las Ordenes -->
+    <div class="tab-contenido" id="tab-ordenes">
+        <div style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h3>Todas las Ordenes del Sistema</h3>
+                <div style="display: flex; gap: 10px;">
+                    <span class="badge badge-rojo"  style="padding: 8px 14px;">1 Pendientes</span>
+                    <span class="badge badge-azul"  style="padding: 8px 14px;">2 En Progreso</span>
+                    <span class="badge badge-verde" style="padding: 8px 14px;">3 Terminadas</span>
+                </div>
+            </div>
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>VEHICULO</th><th>CLIENTE</th>
+                        <th>ESTADO</th><th>MECANICOS</th><th>FECHA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>ORD-001</strong></td>
+                        <td>Dodge Atitud 2020</td>
+                        <td>Carlos Mendoza</td>
+                        <td><span class="badge badge-verde">Terminado</span></td>
+                        <td><div class="avatar rosa" style="width:28px;height:28px;font-size:10px;">DG</div></td>
+                        <td>Mar 03, 2026</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ORD-002</strong></td>
+                        <td>Nissan Altima 2019</td>
+                        <td>Maria Rodriguez</td>
+                        <td><span class="badge badge-azul">En Progreso</span></td>
+                        <td><div class="avatar azul" style="width:28px;height:28px;font-size:10px;">RM</div></td>
+                        <td>Mar 02, 2026</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab: Inventario -->
+    <div class="tab-contenido" id="tab-inventario">
+        <div style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h3>Inventario Completo</h3>
+                <button class="btn btn-primario"><i class="fas fa-wrench"></i> Agregar Herramienta</button>
+            </div>
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>HERRAMIENTA</th><th>CANTIDAD</th>
+                        <th>ESTADO</th><th>UBICACION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>H-001</strong></td>
+                        <td>Llave de torque</td>
+                        <td style="text-align:center;">3</td>
+                        <td><span class="badge badge-verde">Disponible</span></td>
+                        <td>Estante A</td>
+                    </tr>
+                    <tr>
+                        <td><strong>H-002</strong></td>
+                        <td>Gato hidraulico 3 ton</td>
+                        <td style="text-align:center;">2</td>
+                        <td><span class="badge badge-verde">Disponible</span></td>
+                        <td>Zona de trabajo 1</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab: Configuracion -->
+    <div class="tab-contenido" id="tab-configuracion">
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 20px;">Configuracion del Sistema</h3>
+            <div class="config-grid">
+                <div class="config-seccion">
+                    <h4>Notificaciones</h4>
+                    <div class="config-item">
+                        <label for="cfg-nuevas-ordenes">Notificar nuevas ordenes</label>
+                        <input type="checkbox" id="cfg-nuevas-ordenes" checked>
+                    </div>
+                    <div class="config-item">
+                        <label for="cfg-inventario-bajo">Alertas de inventario bajo</label>
+                        <input type="checkbox" id="cfg-inventario-bajo" checked>
+                    </div>
+                    <div class="config-item">
+                        <label for="cfg-resumen-email">Resumen diario por email</label>
+                        <input type="checkbox" id="cfg-resumen-email">
+                    </div>
+                </div>
+                <div class="config-seccion">
+                    <h4>Seguridad</h4>
+                    <div class="config-item">
+                        <label for="cfg-2fa">Autenticacion en dos pasos</label>
+                        <input type="checkbox" id="cfg-2fa" checked>
+                    </div>
+                    <div class="config-item">
+                        <label for="cfg-registro-ip">Registrar IPs de acceso</label>
+                        <input type="checkbox" id="cfg-registro-ip" checked>
+                    </div>
+                    <div class="config-item">
+                        <label for="cfg-sesiones">Sesiones multiples</label>
+                        <input type="checkbox" id="cfg-sesiones">
+                    </div>
+                </div>
+                <div class="config-seccion">
+                    <h4>Respaldos</h4>
+                    <div class="config-item">
+                        <label>Ultimo respaldo</label>
+                        <span>Mar 01, 2026 - 03:00</span>
+                    </div>
+                    <button class="btn btn-secundario" style="width:100%; margin-top:15px;">
+                        Crear Respaldo Manual
+                    </button>
+                </div>
+                <div class="config-seccion">
+                    <h4>Sistema</h4>
+                    <div class="config-item"><label>Version</label><span>v2.4.1</span></div>
+                    <div class="config-item"><label>Ultima actualizacion</label><span>Feb 15, 2026</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cambiarTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('activo'));
+    document.querySelectorAll('.tab-contenido').forEach(tab => tab.classList.remove('activo'));
+    document.querySelector(`[onclick="cambiarTab('${tabId}')"]`).classList.add('activo');
+    document.getElementById('tab-' + tabId).classList.add('activo');
+}
+</script>
