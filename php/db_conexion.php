@@ -1,18 +1,16 @@
 <?php
-// Datos de la base de datos
 $servidor = "localhost";
 $usuario  = "root";
-$password = ""; // En XAMPP por defecto está vacío
-$base_datos = "mecanico"; // Asegúrate de que este nombre sea igual al de phpMyAdmin
+$password = ""; 
+$base_datos = "mecanico"; // <--- Asegúrate de que esté igual que en phpMyAdmin
 
 try {
-    // Crear la conexión
     $conexion = new PDO("mysql:host=$servidor;dbname=$base_datos;charset=utf8", $usuario, $password);
+    $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
+    // Esta línea es útil ahora que empiezas para confirmar que conectó
+    // echo "Conexión exitosa a la base de datos MECANICO"; 
     
-    
-    
-
 } catch (PDOException $error) {
     echo "Error de conexión: " . $error->getMessage();
 }
