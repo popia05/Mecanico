@@ -16,3 +16,14 @@ en el agregar-empleado ya los botones funionan al igual que ya se pueden guardar
 ***El boton de acceso rapido de gestion de ordenes ya funciona 
 -la gestion de ordenes ya funciona al 100
 --Se agregaron 4 interfaces mas 
+**martes 5 de mayo  
+-Se hicieron modificacion en inventario
+-ya se puede abrir el inventario por acceso rapido, al igual ya que ya se guarda en BDD 
+(en ordenes me falta el poder exportarlo)
+++++Aun nos falta agregar la seccion de clientes tanto el agregar, editar, y ver la lista de los clintes existentes y que se enlacen con los carros++++
+de aqui para abajo voy a ir viendo bien de como agregarla informacion de los clientes 
+*/*/*Debemos hacer la modificacion del menu. Ya que no se agrego la seccion de la informacion de clientes. Hay que hacerlo con todos los php que existen
+
+-En clientes ya se puede agregar los clientes
+-se guardan en la bdd  
+-Aparece ya la lista de todos los clientes, hay que hacer las modificacion de nuveo :(  )
