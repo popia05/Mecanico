@@ -1,11 +1,9 @@
-<!-- ESTE ES EL APARTADO DEL ADMIN EN EL PANEL -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informacion - Auto Master</title>
+    <title>Informacion de Administrador - Auto Master</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../CSS/estilos-generales.css">
 </head>
@@ -26,48 +24,58 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="panel.html" class="nav-item">
+                <a href="panel.php" class="nav-item">
                     <i class="fas fa-th-large"></i>
                     <span>Panel</span>
                 </a>
 
                 <div class="nav-item submenu-toggle" onclick="toggleSubmenu('perfil')">
                     <i class="fas fa-user"></i>
-                    <span>Perfil</span>
+                    <span>Usuario</span>
                     <i class="fas fa-chevron-down flecha" id="flecha-perfil"></i>
                 </div>
                 <div class="submenu" id="submenu-perfil">
-                    <a href="informacion.html" class="nav-item activo">
+                    <a href="informacion.php" class="nav-item activo">
                         <i class="fas fa-info-circle"></i>
                         <span>Administrador</span>
                     </a>
-                    <a href="tareas-asignadas.html" class="nav-item">
-                        <i class="fas fa-clipboard-list"></i>
-                        <span>Ver Tareas Asignadas</span>
+                    <a href="informacion-empleados.php" class="nav-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Empleados</span>
+                    </a>
+                    <a href="agregar-empleado.php" class="nav-item">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Agregar Empleados</span>
                     </a>
                 </div>
 
-                <a href="gestion-ordenes.html" class="nav-item">
+                <div class="nav-item submenu-toggle" onclick="toggleSubmenu('tareas')">
                     <i class="fas fa-tasks"></i>
-                    <span>Gestion de Ordenes</span>
-                </a>
+                    <span>Gestion de Tareas</span>
+                    <i class="fas fa-chevron-down flecha" id="flecha-tareas"></i>
+                </div>
 
-                <a href="inventario.html" class="nav-item">
-                    <i class="fas fa-wrench"></i>
-                    <span>Ver Inventario</span>
-                </a>
+                <div class="submenu" id="submenu-tareas">
+                    <a href="gestion-ordenes.php" class="nav-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Gestion de Ordenes</span>
+                    </a>
+                    <a href="inventario.php" class="nav-item">
+                        <i class="fas fa-wrench"></i>
+                        <span>Ver Inventario</span>
+                    </a>
+                    <a href="auditoria.php" class="nav-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Auditoria</span>
+                    </a>
+                </div>
 
-                <a href="nota-remision.html" class="nav-item">
+                <a href="nota-remision.php" class="nav-item">
                     <i class="fas fa-file-invoice"></i>
                     <span>Nota De Remision</span>
                 </a>
 
-                <a href="auditoria.html" class="nav-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Auditoria</span>
-                </a>
-
-                <a href="configuracion.html" class="nav-item">
+                <a href="cerrar-sesion.php" class="nav-item">
                     <i class="fas fa-cog"></i>
                     <span>Cerrar Sesión</span>
                 </a>
@@ -96,12 +104,11 @@
             <div class="pagina">
                 <div class="pagina-titulo">
                     <h2>Detalles de Administrador</h2>
-                    <p>Datos del administrador registrado en el sistema</p>
                 </div>
 
                 <div class="tarjeta">
                     <div class="tarjeta-header">
-                        <h3>Perfil del Administrador</h3>
+                        <h3>Perfil de Administrador</h3>
                         <button class="btn btn-primario">
                             <i class="fas fa-edit"></i> Editar
                         </button>
@@ -113,33 +120,30 @@
                                     DG
                                 </div>
                                 <h3 style="font-size: 18px;">Daniel Garcia Olivas</h3>
-                                <span class="badge badge-verde">Activo</span>
+                                    <input type="text" value="Jefe de Taller">
                             </div>
                             <div style="flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
                                 <div class="form-grupo">
-                                    <label>Nombre Completo</label>
-                                    <input type="text" value="Daniel Garcia Olivas" readonly style="background: var(--fondo);">
+                                    <label>Status</label>
+                                    <input type="text" value="Activo" readonly style="background: var(--fondo);">
+                                </div>
+                                <div class="form-grupo">
+                                    <label>Compañía</label>
+                                    <input type="text" value="Auto Master" readonly style="background: var(--fondo);">
                                 </div>
                                 <div class="form-grupo">
                                     <label>Email</label>
                                     <input type="email" value="daniel@automaster.com" readonly style="background: var(--fondo);">
                                 </div>
                                 <div class="form-grupo">
-                                    <label>Telefono</label>
+                                    <label>Numero de Celular</label>
                                     <input type="text" value="(430) 065-7387" readonly style="background: var(--fondo);">
                                 </div>
                                 <div class="form-grupo">
-                                    <label>Rol</label>
-                                    <input type="text" value="Administrador" readonly style="background: var(--fondo);">
+                                    <label>Dirección</label>
+                                    <input type="text" value="Agua Prieta, Sonora, Mx." readonly style="background: var(--fondo);">
                                 </div>
-                                <div class="form-grupo">
-                                    <label>Fecha de Ingreso</label>
-                                    <input type="text" value="15 de Enero, 2024" readonly style="background: var(--fondo);">
-                                </div>
-                                <div class="form-grupo">
-                                    <label>Ordenes Completadas</label>
-                                    <input type="text" value="156" readonly style="background: var(--fondo);">
-                                </div>
+                                
                             </div>
                         </div>
                     </div>
@@ -150,6 +154,6 @@
 
     </div>
 
-    <script src="../JS/menu.js"></script>
+    <script src="../../js/menu.js"></script>
 </body>
 </html>

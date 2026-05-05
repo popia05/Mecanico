@@ -5,7 +5,7 @@
         <div>
             <h4 style="margin-bottom:15px;">Notificaciones</h4>
             <div class="campo" style="display:flex;justify-content:space-between;align-items:center;">
-                <label>Notificar nuevas ordenes</label>
+                <labelgi>Notificar nuevas ordenes</label>
                 <input type="checkbox" checked style="width:20px;height:20px;">
             </div>
             <div class="campo" style="display:flex;justify-content:space-between;align-items:center;">

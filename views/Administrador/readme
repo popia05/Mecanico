@@ -1,0 +1,9 @@
+Aqui voy a registrar todos los cambios del admin.
+
+domingo 3 de mayo antes de las 12AM y lunes 4 de mayo despues de las 12AM: 
+-añadi codigo faltante a las interfaces de empleado e inicie la de auditoria
+-se agrego dashboard.css que tiene estilos para la auditoria y se agrego tambien en estilos-generrales.css
+-la interfaz de agregar empleado ya esta puesta
+-informacion-empleados necesita ser llenada
+-se agrego accesos rapidos al panel
+-se inicio la interfaz de respaldo, sera modificada

@@ -1,11 +1,10 @@
-<!-- APARTADO PARA TAREAS ASIGNADAS -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tareas Asignadas - Auto Master</title>
+    <!-- tareas-asignadas.php -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../CSS/estilos-generales.css">
 </head>
@@ -13,81 +12,8 @@
 
     <div class="contenedor">
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="sidebar-logo">
-                <div class="sidebar-logo-img">
-                    <i class="fas fa-wrench"></i>
-                </div>
-                <div class="sidebar-logo-texto">
-                    <h2>Menu</h2>
-                    <span>Categorias</span>
-                </div>
-            </div>
+        <?php include '../includes/menu_admin.php'; ?>
 
-            <nav class="sidebar-nav">
-                <a href="panel.html" class="nav-item">
-                    <i class="fas fa-th-large"></i>
-                    <span>Panel</span>
-                </a>
-
-                <div class="nav-item submenu-toggle" onclick="toggleSubmenu('perfil')">
-                    <i class="fas fa-user"></i>
-                    <span>Perfil</span>
-                    <i class="fas fa-chevron-down flecha" id="flecha-perfil"></i>
-                </div>
-                <div class="submenu" id="submenu-perfil">
-                    <a href="informacion.html" class="nav-item">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Informacion</span>
-                    </a>
-                    <a href="tareas-asignadas.html" class="nav-item activo">
-                        <i class="fas fa-clipboard-list"></i>
-                        <span>Ver Tareas Asignadas</span>
-                    </a>
-                </div>
-
-                <a href="gestion-ordenes.html" class="nav-item">
-                    <i class="fas fa-tasks"></i>
-                    <span>Gestion de Ordenes</span>
-                </a>
-
-                <a href="inventario.html" class="nav-item">
-                    <i class="fas fa-wrench"></i>
-                    <span>Ver Inventario</span>
-                </a>
-
-                <a href="nota-remision.html" class="nav-item">
-                    <i class="fas fa-file-invoice"></i>
-                    <span>Nota De Remision</span>
-                </a>
-
-                <a href="auditoria.html" class="nav-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Auditoria (Admin)</span>
-                </a>
-
-                <a href="factura.html" class="nav-item">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    <span>Factura</span>
-                </a>
-
-                <a href="configuracion.html" class="nav-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Configuracion</span>
-                </a>
-            </nav>
-
-            <div class="sidebar-usuario">
-                <div class="sidebar-usuario-avatar">DG</div>
-                <div class="sidebar-usuario-info">
-                    <h4>Daniel G.</h4>
-                    <span>Mecanico</span>
-                </div>
-            </div>
-        </aside>
-
-        <!-- CONTENIDO -->
         <main class="contenido">
             <header class="cabecera">
                 <div class="cabecera-titulo">
@@ -109,31 +35,16 @@
                 <!-- Resumen -->
                 <div class="tarjetas-resumen" style="grid-template-columns: repeat(3, 1fr);">
                     <div class="tarjeta-resumen">
-                        <div class="tarjeta-icono naranja">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="tarjeta-info">
-                            <h3>3</h3>
-                            <span>Pendientes</span>
-                        </div>
+                        <div class="tarjeta-icono naranja"><i class="fas fa-clock"></i></div>
+                        <div class="tarjeta-info"><h3>3</h3><span>Pendientes</span></div>
                     </div>
                     <div class="tarjeta-resumen">
-                        <div class="tarjeta-icono azul">
-                            <i class="fas fa-spinner"></i>
-                        </div>
-                        <div class="tarjeta-info">
-                            <h3>2</h3>
-                            <span>En Progreso</span>
-                        </div>
+                        <div class="tarjeta-icono azul"><i class="fas fa-spinner"></i></div>
+                        <div class="tarjeta-info"><h3>2</h3><span>En Progreso</span></div>
                     </div>
                     <div class="tarjeta-resumen">
-                        <div class="tarjeta-icono verde">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        <div class="tarjeta-info">
-                            <h3>15</h3>
-                            <span>Completadas</span>
-                        </div>
+                        <div class="tarjeta-icono verde"><i class="fas fa-check"></i></div>
+                        <div class="tarjeta-info"><h3>15</h3><span>Completadas</span></div>
                     </div>
                 </div>
 
@@ -162,7 +73,7 @@
                                     <td>Cambio de amortiguadores</td>
                                     <td><span class="badge badge-azul">En Progreso</span></td>
                                     <td>
-                                        <button class="btn btn-secundario" style="padding: 6px 12px; font-size: 12px;">
+                                        <button class="btn btn-secundario" style="padding:6px 12px;font-size:12px;">
                                             <i class="fas fa-eye"></i> Ver
                                         </button>
                                     </td>
@@ -174,7 +85,7 @@
                                     <td>Afinacion mayor</td>
                                     <td><span class="badge badge-naranja">Pendiente</span></td>
                                     <td>
-                                        <button class="btn btn-primario" style="padding: 6px 12px; font-size: 12px;">
+                                        <button class="btn btn-primario" style="padding:6px 12px;font-size:12px;">
                                             <i class="fas fa-play"></i> Iniciar
                                         </button>
                                     </td>
@@ -186,7 +97,7 @@
                                     <td>Cambio de frenos</td>
                                     <td><span class="badge badge-azul">En Progreso</span></td>
                                     <td>
-                                        <button class="btn btn-secundario" style="padding: 6px 12px; font-size: 12px;">
+                                        <button class="btn btn-secundario" style="padding:6px 12px;font-size:12px;">
                                             <i class="fas fa-eye"></i> Ver
                                         </button>
                                     </td>
@@ -198,7 +109,7 @@
                                     <td>Revision general</td>
                                     <td><span class="badge badge-naranja">Pendiente</span></td>
                                     <td>
-                                        <button class="btn btn-primario" style="padding: 6px 12px; font-size: 12px;">
+                                        <button class="btn btn-primario" style="padding:6px 12px;font-size:12px;">
                                             <i class="fas fa-play"></i> Iniciar
                                         </button>
                                     </td>

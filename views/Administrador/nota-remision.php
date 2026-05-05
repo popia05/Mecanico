@@ -1,5 +1,3 @@
-<!-- apartado de nota de remisión -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -22,7 +20,7 @@
         .vista-nota.activo { display: block; }
         .vista-lista.oculto { display: none; }
         .nota-contenedor { display: flex; gap: 20px; max-width: 1000px; }
-        .nota-formulario { flex: 1; background-color: var(--blanco); border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); padding: 25px; }
+        .nota-formulario { flex: 1; background-color: var(--blanco); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 25px; }
         .nota-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--borde); }
         .nota-header-izq { display: flex; align-items: center; gap: 10px; }
         .btn-volver { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--borde); background: var(--blanco); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--texto-claro); }
@@ -43,88 +41,15 @@
         .tarjeta-total { background: linear-gradient(135deg, var(--rojo), #991b1b); border-radius: 12px; padding: 15px; color: white; text-align: center; margin-top: auto; width: 140px; margin-left: -60px; }
         .tarjeta-total-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 10px; }
         .tarjeta-total-monto { font-size: 28px; font-weight: 700; margin-bottom: 15px; }
-        .btn-pagar { width: 100%; padding: 10px; background-color: rgba(0, 0, 0, 0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-pagar { width: 100%; padding: 10px; background-color: rgba(0,0,0,0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <div class="contenedor">
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="sidebar-logo">
-                <div class="sidebar-logo-img">
-                    <i class="fas fa-wrench"></i>
-                </div>
-                <div class="sidebar-logo-texto">
-                    <h2>Menu</h2>
-                    <span>Categorias</span>
-                </div>
-            </div>
+        <?php include '../includes/menu_admin.php'; ?>
 
-            <nav class="sidebar-nav">
-                <a href="panel.html" class="nav-item">
-                    <i class="fas fa-th-large"></i>
-                    <span>Panel</span>
-                </a>
-
-                <div class="nav-item submenu-toggle" onclick="toggleSubmenu('perfil')">
-                    <i class="fas fa-user"></i>
-                    <span>Perfil</span>
-                    <i class="fas fa-chevron-down flecha" id="flecha-perfil"></i>
-                </div>
-                <div class="submenu" id="submenu-perfil">
-                    <a href="informacion.html" class="nav-item">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Informacion</span>
-                    </a>
-                    <a href="tareas-asignadas.html" class="nav-item">
-                        <i class="fas fa-clipboard-list"></i>
-                        <span>Ver Tareas Asignadas</span>
-                    </a>
-                </div>
-
-                <a href="gestion-ordenes.html" class="nav-item">
-                    <i class="fas fa-tasks"></i>
-                    <span>Gestion de Ordenes</span>
-                </a>
-
-                <a href="inventario.html" class="nav-item">
-                    <i class="fas fa-wrench"></i>
-                    <span>Ver Inventario</span>
-                </a>
-
-                <a href="nota-remision.html" class="nav-item activo">
-                    <i class="fas fa-file-invoice"></i>
-                    <span>Nota De Remision</span>
-                </a>
-
-                <a href="auditoria.html" class="nav-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Auditoria (Admin)</span>
-                </a>
-
-                <a href="factura.html" class="nav-item">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    <span>Factura</span>
-                </a>
-
-                <a href="configuracion.html" class="nav-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Configuracion</span>
-                </a>
-            </nav>
-
-            <div class="sidebar-usuario">
-                <div class="sidebar-usuario-avatar">DG</div>
-                <div class="sidebar-usuario-info">
-                    <h4>Daniel G.</h4>
-                    <span>Mecanico</span>
-                </div>
-            </div>
-        </aside>
-
-        <!-- CONTENIDO -->
         <main class="contenido">
             <header class="cabecera">
                 <div class="cabecera-titulo">
@@ -138,7 +63,7 @@
             </header>
 
             <div class="pagina">
-                
+
                 <!-- VISTA 1: Lista de trabajos terminados -->
                 <div class="vista-lista" id="vista-lista">
                     <div class="pagina-titulo">
@@ -151,7 +76,7 @@
                         </div>
                         <div class="tarjeta-body">
                             <div class="timeline" id="lista-trabajos">
-                                <!-- Trabajo 1 -->
+
                                 <div class="trabajo-item">
                                     <div class="trabajo-icono"><i class="fas fa-tools"></i></div>
                                     <div class="trabajo-contenido">
@@ -167,7 +92,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Trabajo 2 -->
                                 <div class="trabajo-item">
                                     <div class="trabajo-icono"><i class="fas fa-tools"></i></div>
                                     <div class="trabajo-contenido">
@@ -183,7 +107,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Trabajo 3 -->
                                 <div class="trabajo-item">
                                     <div class="trabajo-icono"><i class="fas fa-tools"></i></div>
                                     <div class="trabajo-contenido">
@@ -198,6 +121,7 @@
                                         <button class="btn btn-primario" style="float: right;" onclick="abrirNota(3)">Agregar Nota</button>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -217,8 +141,8 @@
 
                             <div class="negocio-info">
                                 <div class="negocio-nombre">Auto Master</div>
-                                <div style="width: 80px; height: 50px; background: var(--fondo); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-car" style="font-size: 24px; color: var(--rojo);"></i>
+                                <div style="width:80px;height:50px;background:var(--fondo);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fas fa-car" style="font-size:24px;color:var(--rojo);"></i>
                                 </div>
                             </div>
 
@@ -226,12 +150,10 @@
                                 <label>Cliente:</label>
                                 <div class="valor" id="nota-cliente">Alonso Martinez Osorio</div>
                             </div>
-
                             <div class="campo-nota">
                                 <label>Placas:</label>
                                 <div class="valor" id="nota-placas">V4HS T7JW</div>
                             </div>
-
                             <div class="campo-nota">
                                 <label>Asignacion de personal:</label>
                                 <div class="valor" id="nota-mecanico">Mecanico 1</div>

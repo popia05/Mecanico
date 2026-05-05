@@ -1,3 +1,8 @@
+<?php
+// auditoria.php — se incluye desde index.php
+// Solo contiene el contenido interno de la página, sin <html>, <head> ni <body>
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>

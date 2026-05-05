@@ -24,7 +24,7 @@
 
                 <h2>Inicio Sesión</h2>
 
-                <form id="loginForm">
+                <form id="loginForm" method="POST" action="">
                     <div class="input-group">
                         <label for="username">Email</label>
                         <input type="email" id="username" name="username" placeholder="ejemplo@correo.com" required>

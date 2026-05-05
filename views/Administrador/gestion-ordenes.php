@@ -1,4 +1,7 @@
-<!-- APARTADO PARA GESTION DE ORDENES -->
+<?php
+// gestion.php — se incluye desde index.php
+// Solo contiene el contenido interno de la página, sin <html>, <head> ni <body>
+?>
 
 <!DOCTYPE html>
 <html lang="es">
@@ -7,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion de Ordenes - Auto Master</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../../CSS/estilos-generales.css">
+    <link rel="stylesheet" href="../CSS/estilos-generales.css">
 </head>
 <body>
 
