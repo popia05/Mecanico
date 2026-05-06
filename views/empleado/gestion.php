@@ -1,40 +1,48 @@
-<div class="seccion">
-    <div class="seccion-header">
-        <h3>Gestion de Ordenes</h3>
-        <button class="btn btn-rojo"><i class="fas fa-plus"></i> Nueva Orden</button>
+<div class="seccion-titulo">
+    <h2>Gestion de Ordenes</h2>
+    <p>Vista general de todas tus ordenes de trabajo</p>
+</div>
+
+<div class="busqueda-fila">
+    <div class="input-busqueda">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Buscar por vehiculo, cliente o ID...">
     </div>
-    <table class="tabla">
-        <thead>
-            <tr><th>ID</th><th>Vehiculo</th><th>Cliente</th><th>Estado</th><th>Mecanico</th><th>Acciones</th></tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>ORD-001</strong></td><td>Dodge Atitud 2020</td><td>Carlos Mendoza</td>
-                <td><span class="badge badge-verde">Terminado</span></td><td>Daniel G.</td>
-                <td>
-                    <button class="btn-icono"><i class="fas fa-eye"></i></button>
-                    <button class="btn-icono"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icono"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>ORD-002</strong></td><td>Nissan Altima 2019</td><td>Maria Rodriguez</td>
-                <td><span class="badge badge-azul">En Progreso</span></td><td>Daniel G.</td>
-                <td>
-                    <button class="btn-icono"><i class="fas fa-eye"></i></button>
-                    <button class="btn-icono"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icono"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>ORD-003</strong></td><td>Nissan Altima 2018</td><td>Juan Lopez</td>
-                <td><span class="badge badge-verde">Terminado</span></td><td>Roberto M.</td>
-                <td>
-                    <button class="btn-icono"><i class="fas fa-eye"></i></button>
-                    <button class="btn-icono"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icono"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <button class="btn btn-gris-borde"><i class="fas fa-filter"></i> Filtrar</button>
+</div>
+
+<div class="tabla-tarjeta">
+<table class="tabla">
+<thead>
+<tr><th>ID</th><th>VEHICULO</th><th>CLIENTE</th><th>ESTADO</th><th>FECHA</th><th>ACCION</th></tr>
+</thead>
+<tbody>
+<?php
+$ordenes = [
+    [1,'ORD-001','Dodge Atitud 2020','Carlos Mendoza','Pendiente','rojo','Mar 03, 2026'],
+    [2,'ORD-002','Nissan Altima 2019','Maria Rodriguez','En Progreso','azul','Mar 02, 2026'],
+    [3,'ORD-003','Nissan Altima 2018','Juan Lopez','Terminado','verde','Mar 01, 2026'],
+    [4,'ORD-004','Toyota Corolla 2021','Ana Gutierrez','Pendiente','rojo','Mar 03, 2026'],
+    [5,'ORD-005','Ford F-150 2022','Roberto Sanchez','En Progreso','azul','Feb 28, 2026'],
+    [6,'ORD-006','Chevrolet Spark 2020','Laura Martinez','Terminado','verde','Feb 27, 2026'],
+];
+foreach ($ordenes as $o): ?>
+<tr data-id="<?= $o[0] ?>">
+    <td><?= $o[1] ?></td>
+    <td><strong><?= $o[2] ?></strong></td>
+    <td><?= $o[3] ?></td>
+    <td><span class="badge badge-<?= $o[5] ?> celda-estado"><?= $o[4] ?></span></td>
+    <td><?= $o[6] ?></td>
+    <td>
+        <a href="index.php?p=ordenes&id=<?= $o[0] ?>" class="link-ver">Ver</a>
+        <?php if($o[4] == 'Pendiente'): ?>
+            <button class="btn btn-rojo btn-sm celda-accion" onclick="iniciarOrden(this)">Iniciar</button>
+        <?php elseif($o[4] == 'En Progreso'): ?>
+            <button class="btn btn-rojo btn-sm celda-accion" onclick="completarOrden(this)">Completar</button>
+        <?php endif; ?>
+    </td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
 </div>
