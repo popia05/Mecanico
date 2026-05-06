@@ -44,85 +44,47 @@
     <div class="contenedor">
 
         <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="sidebar-logo">
-                <div class="sidebar-logo-img">
-                    <i class="fas fa-wrench"></i>
-                </div>
-                <div class="sidebar-logo-texto">
-                    <h2>Menu</h2>
-                    <span>Categorias</span>
-                </div>
+         <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-img"><i class="fas fa-wrench"></i></div>
+            <div class="sidebar-logo-texto"><h2>Menu</h2><span>Categorias</span></div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="panel.php" class="nav-item activo"><i class="fas fa-th-large"></i><span>Panel</span></a>
+
+            <div class="nav-item submenu-toggle" onclick="toggleSubmenu('perfil')">
+                <i class="fas fa-user"></i><span>Usuario</span>
+                <i class="fas fa-chevron-down flecha" id="flecha-perfil"></i>
+            </div>
+            <div class="submenu" id="submenu-perfil">
+                <a href="informacion-admin.php" class="nav-item"><i class="fas fa-info-circle"></i><span>Administrador</span></a>
+                <a href="informacion-empleados.php" class="nav-item"><i class="fas fa-info-circle"></i><span>Empleados</span></a>
+                <a href="agregar-empleado.php" class="nav-item"><i class="fas fa-user-plus"></i><span>Agregar Empleados</span></a>
             </div>
 
-            <nav class="sidebar-nav">
-                <a href="panel.html" class="nav-item">
-                    <i class="fas fa-th-large"></i>
-                    <span>Panel</span>
-                </a>
-
-                <div class="nav-item submenu-toggle" onclick="toggleSubmenu('perfil')">
-                    <i class="fas fa-user"></i>
-                    <span>Perfil</span>
-                    <i class="fas fa-chevron-down flecha" id="flecha-perfil"></i>
-                </div>
-                <div class="submenu" id="submenu-perfil">
-                    <a href="informacion.html" class="nav-item">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Informacion</span>
-                    </a>
-                    <a href="tareas-asignadas.html" class="nav-item">
-                        <i class="fas fa-clipboard-list"></i>
-                        <span>Ver Tareas Asignadas</span>
-                    </a>
-                </div>
-
-                <a href="gestion-ordenes.html" class="nav-item">
-                    <i class="fas fa-tasks"></i>
-                    <span>Gestion de Ordenes</span>
-                </a>
-
-                <a href="inventario.html" class="nav-item">
-                    <i class="fas fa-wrench"></i>
-                    <span>Ver Inventario</span>
-                </a>
-
-                <a href="nota-remision.html" class="nav-item">
-                    <i class="fas fa-file-invoice"></i>
-                    <span>Nota De Remision</span>
-                </a>
-
-                <a href="auditoria.html" class="nav-item activo">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Auditoria (Admin)</span>
-                </a>
-
-                <a href="factura.html" class="nav-item">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    <span>Factura</span>
-                </a>
-
-                <a href="configuracion.html" class="nav-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Configuracion</span>
-                </a>
-            </nav>
-
-            <div class="sidebar-usuario">
-                <div class="sidebar-usuario-avatar">DG</div>
-                <div class="sidebar-usuario-info">
-                    <h4>Daniel G.</h4>
-                    <span>Mecanico</span>
-                </div>
+            <div class="nav-item submenu-toggle" onclick="toggleSubmenu('tareas')">
+                <i class="fas fa-tasks"></i><span>Gestión de Tareas</span>
+                <i class="fas fa-chevron-down flecha" id="flecha-tareas"></i>
             </div>
-        </aside>
+            <div class="submenu" id="submenu-tareas">
+                <a href="gestion-ordenes.php" class="nav-item"><i class="fas fa-info-circle"></i><span>Gestión de Ordenes</span></a>
+                <a href="inventario.php" class="nav-item"><i class="fas fa-wrench"></i><span>Ver Inventario</span></a>
+                <a href="auditoria.php" class="nav-item"><i class="fas fa-shield-alt"></i><span>Auditoria</span></a>
+            </div>
+
+            <a href="nota-remision.php" class="nav-item"><i class="fas fa-file-invoice"></i><span>Notas de Remisión</span></a>
+            <a href="login.php" class="nav-item"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+        </nav>
+        <div class="sidebar-usuario">
+            <div class="sidebar-usuario-avatar">DG</div>
+            <div class="sidebar-usuario-info"><h4>Daniel G.</h4><span>Administrador</span></div>
+        </div>
+    </aside>
 
         <!-- CONTENIDO -->
         <main class="contenido">
             <header class="cabecera">
-                <div class="cabecera-titulo">
-                    <h1>Auditoria - Panel Admin</h1>
-                </div>
+                
                 <div class="cabecera-acciones">
                     <button><i class="fas fa-search"></i></button>
                     <button><i class="fas fa-bell"></i></button>
@@ -136,8 +98,7 @@
                 <div class="banner-admin">
                     <div class="banner-icono"><i class="fas fa-shield-alt"></i></div>
                     <div class="banner-texto">
-                        <h2>Panel de Administrador</h2>
-                        <p>Control total del sistema - Fuel Injection Auto Master</p>
+                        <h2>Auditoria del Sistema</h2>
                     </div>
                 </div>
 
@@ -340,7 +301,7 @@
                                 </div>
                                 <div class="config-seccion">
                                     <h4>Sistema</h4>
-                                    <div class="config-item"><label>Version</label><span>v2.4.1</span></div>
+                                    <div class="config-item"><label>Versión</label><span>v2.4.1</span></div>
                                     <div class="config-item"><label>Ultima actualizacion</label><span>Feb 15, 2026</span></div>
                                 </div>
                             </div>

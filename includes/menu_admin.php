@@ -34,7 +34,7 @@ $pagina_actual = $_GET['p'] ?? 'panel';
 
         <a href="index.php?p=gestion" class="nav-item <?= $pagina_actual=='gestion'?'activo':'' ?>">
             <i class="fas fa-tasks"></i>
-            <span>Gestion de Ordenes</span>
+            <span>Gestión de Ordenes</span>
         </a>
 
         <a href="index.php?p=inventario" class="nav-item <?= $pagina_actual=='inventario'?'activo':'' ?>">
@@ -44,12 +44,12 @@ $pagina_actual = $_GET['p'] ?? 'panel';
 
         <a href="index.php?p=auditoria" class="nav-item <?= $pagina_actual=='auditoria'?'activo':'' ?>">
             <i class="fas fa-shield-alt"></i>
-            <span>Auditoria (Admin)</span>
+            <span>Auditoria</span>
         </a>
 
         <a href="index.php?p=nota-remision" class="nav-item <?= $pagina_actual=='nota-remision'?'activo':'' ?>">
             <i class="fas fa-file-invoice"></i>
-            <span>Nota De Remision</span>
+            <span>Nota de Remision</span>
         </a>
 
         <a href="index.php?p=factura" class="nav-item <?= $pagina_actual=='factura'?'activo':'' ?>">
@@ -59,7 +59,7 @@ $pagina_actual = $_GET['p'] ?? 'panel';
 
         <a href="index.php?p=configuracion" class="nav-item <?= $pagina_actual=='configuracion'?'activo':'' ?>">
             <i class="fas fa-cog"></i>
-            <span>Configuracion</span>
+            <span>Cerrar Sesión</span>
         </a>
     </nav>
 
