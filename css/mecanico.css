@@ -877,3 +877,176 @@ body {
     max-height: 1000px !important;
     padding: 0 20px 20px 20px !important;
 }
+/* ===== PANEL DE EMPLEADO ===== */
+.bienvenida-panel {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.bienvenida-panel h2 { margin: 0 0 6px 0; font-size: 26px; color: white; }
+.bienvenida-panel p { margin: 0; opacity: 0.85; font-size: 14px; }
+.fecha-hoy {
+    background: rgba(255,255,255,0.12);
+    padding: 10px 18px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.stats-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 30px;
+}
+.stat-card-mini {
+    background: white;
+    padding: 18px 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    border: 1px solid #f1f5f9;
+}
+.stat-icono-mini {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+.stat-icono-mini.rojo { background: #dc2626; }
+.stat-icono-mini.azul { background: #3b82f6; }
+.stat-icono-mini.verde { background: #16a34a; }
+.stat-card-mini h3 { margin: 0; font-size: 24px; color: #1f2937; }
+.stat-card-mini span { color: #64748b; font-size: 13px; }
+
+.titulo-seccion-panel {
+    font-size: 18px;
+    color: #1f2937;
+    margin: 0 0 16px 0;
+    padding-left: 4px;
+}
+
+.acceso-principal {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+.card-acceso {
+    background: white;
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    gap: 18px;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #e5e7eb;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.card-acceso:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(220,38,38,0.12);
+    border-color: #dc2626;
+}
+.card-acceso.destacado .card-acceso-icono {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: white;
+}
+.card-acceso-icono {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+}
+.card-acceso-contenido { flex: 1; }
+.card-acceso-contenido h3 {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    color: #1f2937;
+}
+.card-acceso-contenido p {
+    margin: 0 0 12px 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.card-acceso-flecha {
+    color: #dc2626;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.acceso-secundario {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+.card-acceso-mini {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+.card-acceso-mini:hover {
+    border-color: #dc2626;
+    background: #fef2f2;
+}
+.card-acceso-mini-icono {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.card-acceso-mini h4 {
+    margin: 0 0 2px 0;
+    font-size: 14px;
+    color: #1f2937;
+}
+.card-acceso-mini span {
+    font-size: 12px;
+    color: #64748b;
+}
+.nav-cerrar {
+    margin-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: #fca5a5 !important;
+}
+.nav-cerrar:hover {
+    background: rgba(220,38,38,0.15) !important;
+    color: #fff !important;
+}

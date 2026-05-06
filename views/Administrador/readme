@@ -1,0 +1,34 @@
+Aqui voy a registrar todos los cambios del admin.
+
+domingo 3 de mayo antes de las 12AM y lunes 4 de mayo despues de las 12AM: 
+-añadi codigo faltante a las interfaces de empleado e inicie la de auditoria
+-se agrego dashboard.css que tiene estilos para la auditoria y se agrego tambien en estilos-generrales.css
+-la interfaz de agregar empleado ya esta puesta
+-informacion-empleados necesita ser llenada
+-se agrego accesos rapidos al panel
+-se inicio la interfaz de respaldo, sera modificada
+
+***lunes 4 de mayo
+en el agregar-empleado ya los botones funionan al igual que ya se pueden guardar los empleados con exito y igual subir fotos
+-en el informacion del empleado ya sale toda la informacion del empleado y su fotos
+-igual ya se pude editar la info del empleado
+-Ya el panel y todo funciona (aun me faltan los botones de acceso rapido pero primero vere los paneles)
+***El boton de acceso rapido de gestion de ordenes ya funciona 
+-la gestion de ordenes ya funciona al 100
+--Se agregaron 4 interfaces mas 
+**martes 5 de mayo  
+-Se hicieron modificacion en inventario
+-ya se puede abrir el inventario por acceso rapido, al igual ya que ya se guarda en BDD 
+(en ordenes me falta el poder exportarlo)
+++++Aun nos falta agregar la seccion de clientes tanto el agregar, editar, y ver la lista de los clintes existentes y que se enlacen con los carros++++
+de aqui para abajo voy a ir viendo bien de como agregarla informacion de los clientes 
+*/*/*Debemos hacer la modificacion del menu. Ya que no se agrego la seccion de la informacion de clientes. Hay que hacerlo con todos los php que existen
+
+-En clientes ya se puede agregar los clientes
+-se guardan en la bdd  
+-Aparece ya la lista de todos los clientes, hay que hacer las modificacion de nuveo :(  )
+
+==MARTES 5 DE MAYO==
+-Se hicieron modificaciones en TODAS las interfaces respecto al PANEL para que sean totalmente iguales.
+-Coreccion de ortografia
+--Se elimino el logo anterior ya que estaba corrompido el archivo y volvi a generarlo, ya debe funcionar y aparecer la foto.

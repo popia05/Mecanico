@@ -35,8 +35,9 @@
         <a href="index.php?p=nota-remision" class="nav-item <?= in_array($p,['nota-remision','nota-detalle'])?'activo':'' ?>">
             <i class="fas fa-file-invoice"></i><span>Nota De Remision</span>
         </a>
-        <a href="index.php?p=configuracion" class="nav-item <?= $p=='configuracion'?'activo':'' ?>">
-            <i class="fas fa-cog"></i><span>Configuracion</span>
+                <a href="../../logout.php" class="nav-item nav-cerrar" onclick="return confirm('¿Seguro que quieres cerrar sesion?')">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Cerrar Sesion</span>
         </a>
     </nav>
 
