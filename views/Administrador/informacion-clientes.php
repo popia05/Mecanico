@@ -204,11 +204,11 @@ try {
             </div>
 
             <div class="nav-item submenu-toggle" onclick="toggleSubmenu('tareas')">
-                <i class="fas fa-tasks"></i><span>Gestion de Tareas</span>
+                <i class="fas fa-tasks"></i><span>Gestión de Tareas</span>
                 <i class="fas fa-chevron-down flecha" id="flecha-tareas"></i>
             </div>
             <div class="submenu" id="submenu-tareas">
-                <a href="gestion-ordenes.php" class="nav-item"><i class="fas fa-info-circle"></i><span>Gestion de Ordenes</span></a>
+                <a href="gestion-ordenes.php" class="nav-item"><i class="fas fa-info-circle"></i><span>Gestión de Ordenes</span></a>
                 <a href="inventario.php" class="nav-item"><i class="fas fa-wrench"></i><span>Ver Inventario</span></a>
                 <a href="auditoria.php" class="nav-item"><i class="fas fa-shield-alt"></i><span>Auditoria</span></a>
             </div>

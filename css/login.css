@@ -122,6 +122,12 @@
     color: #333;
 }
 
+.password-wrapper input::-ms-reveal,
+.password-wrapper input::-ms-clear,
+.password-wrapper input::-webkit-textfield-decoration-container {
+    display: none !important;
+}
+
 .input-group input:focus {
     border-color: #d32f2f;
     outline: none;

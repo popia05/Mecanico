@@ -14,7 +14,7 @@
             <div class="login-left">
                 <div class="brand-header">
                     <div class="brand-logo">
-                        <img src="../logo.png.png" alt="Fuel Injection Auto Master logo">
+                        <img src="../../logo.png.png" alt="Fuel Injection Auto Master logo">
                     </div>
                     <div>
                         <p class="brand-caption"><b>Fuel Injection</b></p>
@@ -51,13 +51,13 @@
             <div class="login-right">
                 <div class="hero-card">
                     <div class="hero-image">
-                        <img src="../logo.png.png" alt="Fuel Injection Auto Master logo">
+                        <img src="../../logo.png.png" alt="Fuel Injection Auto Master logo">
                     </div>
                     <p><b>¡Comienza a optimizar el rendimiento de tu auto hoy!</b></p>
                 </div>
             </div>
         </div>
     </div>
-    <script src="../js/login.js"></script>
+    <script src="../../JS/login.js"></script>
 </body>
 </html>
