@@ -83,7 +83,7 @@
                     <span>Notas de Remisión</span>
                 </a>
 
-                <a href="login.html" class="nav-item">
+                <a href="login.php" class="nav-item">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Cerrar Sesión</span>
                 </a>

@@ -47,7 +47,7 @@ require_once '../../php/db_conexion.php';
                 <i class="fas fa-chevron-down flecha" id="flecha-clientes"></i>
             </div>
             <div class="submenu" id="submenu-clientes">
-                <a href="informacion-clientes.html" class="nav-item"><i class="fas fa-address-card"></i><span>Ver Clientes</span></a>
+                <a href="informacion-clientes.php" class="nav-item"><i class="fas fa-address-card"></i><span>Ver Clientes</span></a>
             </div>
 
             <a href="nota-remision.php" class="nav-item"><i class="fas fa-file-invoice"></i><span>Notas de Remisión</span></a>

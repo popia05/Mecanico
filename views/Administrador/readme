@@ -27,3 +27,8 @@ de aqui para abajo voy a ir viendo bien de como agregarla informacion de los cli
 -En clientes ya se puede agregar los clientes
 -se guardan en la bdd  
 -Aparece ya la lista de todos los clientes, hay que hacer las modificacion de nuveo :(  )
+
+==MARTES 5 DE MAYO==
+-Se hicieron modificaciones en TODAS las interfaces respecto al PANEL para que sean totalmente iguales.
+-Coreccion de ortografia
+--Se elimino el logo anterior ya que estaba corrompido el archivo y volvi a generarlo, ya debe funcionar y aparecer la foto.
