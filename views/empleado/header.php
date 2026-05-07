@@ -19,7 +19,7 @@
         </div>
         <div class="submenu <?= in_array($p,['perfil','ordenes'])?'abierto':'' ?>">
             <a href="index.php?p=perfil" class="nav-item <?= $p=='perfil'?'activo':'' ?>">
-                <i class="fas fa-info-circle"></i><span>Informacion</span>
+                <i class="fas fa-info-circle"></i><span>Empleado</span>
             </a>
             <a href="index.php?p=ordenes" class="nav-item <?= $p=='ordenes'?'activo':'' ?>">
                 <i class="fas fa-clipboard-list"></i><span>Ver Tareas Asignadas</span>

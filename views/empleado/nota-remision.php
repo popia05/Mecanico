@@ -1,3 +1,97 @@
+<?php
+require_once '../../php/db_conexion.php';
+
+$mensaje = '';
+$tipo_mensaje = '';
+
+// Guardar nota de remisión
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_nota'])) {
+    $id_orden       = intval($_POST['id_orden'] ?? 0);
+    $id_cliente     = intval($_POST['id_cliente'] ?? 0);
+    $id_servicio    = intval($_POST['id_servicio'] ?? 0) ?: null;
+    $fecha_ingreso  = $_POST['fecha_ingreso'] ?? '';
+    $fecha_salida   = $_POST['fecha_salida'] ?? '';
+    $descripcion    = trim($_POST['descripcion'] ?? '');
+    $costo_total    = floatval($_POST['costo_total'] ?? 0);
+    $garantia       = trim($_POST['garantia'] ?? '');
+    $observaciones  = trim($_POST['observaciones'] ?? '');
+
+    try {
+        // Actualizar servicio si existe, o insertar
+        if ($id_servicio) {
+            $sql = "UPDATE servicios SET descripcion_falla=:d, reparacion_realizada=:r, costo_total=:c, fecha_ingreso=:fi WHERE id_servicio=:id";
+            $stmt = $conexion->prepare($sql);
+            $stmt->execute([':d'=>$descripcion,':r'=>$observaciones,':c'=>$costo_total,':fi'=>$fecha_ingreso,':id'=>$id_servicio]);
+        } else {
+            // Obtener id_vehiculo y id_empleado de la orden
+            $ord = $conexion->prepare("SELECT id_mecanico FROM ordenes WHERE id_orden=:id");
+            $ord->execute([':id'=>$id_orden]);
+            $orden_data = $ord->fetch(PDO::FETCH_ASSOC);
+            $sql = "INSERT INTO servicios (fecha_ingreso, descripcion_falla, reparacion_realizada, costo_total, id_empleado) VALUES (:fi,:d,:r,:c,:e)";
+            $stmt = $conexion->prepare($sql);
+            $stmt->execute([':fi'=>$fecha_ingreso,':d'=>$descripcion,':r'=>$observaciones,':c'=>$costo_total,':e'=>$orden_data['id_mecanico'] ?? null]);
+        }
+        $mensaje = '¡Nota de remisión guardada!';
+        $tipo_mensaje = 'exito';
+    } catch (PDOException $e) {
+        $mensaje = 'Error: ' . $e->getMessage();
+        $tipo_mensaje = 'error';
+    }
+}
+
+// Obtener clientes para el select
+$clientes = [];
+try {
+    $stmt = $conexion->query("SELECT id_cliente, nombre, apellido, placa, marca_carro, modelo_carro FROM clientes ORDER BY nombre ASC");
+    $clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) { $clientes = []; }
+
+// Obtener órdenes con mecánico
+$ordenes = [];
+try {
+    $stmt = $conexion->query("
+        SELECT o.id_orden, o.vehiculo, o.cliente, o.servicio, o.estado, o.fecha_creacion,
+               CONCAT(e.nombre,' ',e.apellido) AS mecanico_nombre
+        FROM ordenes o
+        LEFT JOIN empleados e ON o.id_mecanico = e.id_empleado
+        ORDER BY o.fecha_creacion DESC
+    ");
+    $ordenes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) { $ordenes = []; }
+
+// Orden seleccionada (si viene por GET)
+$orden_sel = null;
+$cliente_sel = null;
+$servicio_sel = null;
+
+if (isset($_GET['id_orden'])) {
+    $id_ord = intval($_GET['id_orden']);
+    try {
+        $stmt = $conexion->prepare("
+            SELECT o.*, CONCAT(e.nombre,' ',e.apellido) AS mecanico_nombre, e.puesto AS mecanico_puesto
+            FROM ordenes o
+            LEFT JOIN empleados e ON o.id_mecanico = e.id_empleado
+            WHERE o.id_orden = :id
+        ");
+        $stmt->execute([':id' => $id_ord]);
+        $orden_sel = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($orden_sel) {
+            // Buscar cliente por placa (vehiculo contiene la placa o nombre)
+            $stmt2 = $conexion->query("SELECT * FROM clientes LIMIT 1");
+            // intentar match por nombre del cliente en la orden
+            $stmt2 = $conexion->prepare("SELECT * FROM clientes WHERE CONCAT(nombre,' ',apellido) LIKE :c OR placa LIKE :p LIMIT 1");
+            $stmt2->execute([':c' => '%'.$orden_sel['cliente'].'%', ':p' => '%'.$orden_sel['vehiculo'].'%']);
+            $cliente_sel = $stmt2->fetch(PDO::FETCH_ASSOC);
+
+            // Buscar servicio asociado al empleado de esta orden
+            $stmt3 = $conexion->prepare("SELECT * FROM servicios WHERE id_empleado = :e ORDER BY id_servicio DESC LIMIT 1");
+            $stmt3->execute([':e' => $orden_sel['id_mecanico'] ?? 0]);
+            $servicio_sel = $stmt3->fetch(PDO::FETCH_ASSOC);
+        }
+    } catch (PDOException $e) { $orden_sel = null; }
+}
+?>
 <h2 style="text-align:center;margin-bottom:25px;">Notas De Remision</h2>
 
 <div class="seccion" style="background:var(--fondo-claro);">

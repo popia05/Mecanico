@@ -24,7 +24,7 @@ $pagina_actual = $_GET['p'] ?? 'panel';
         <div class="submenu <?= in_array($pagina_actual,['perfil','ordenes'])?'abierto':'' ?>">
             <a href="index.php?p=perfil" class="nav-item <?= $pagina_actual=='perfil'?'activo':'' ?>">
                 <i class="fas fa-info-circle"></i>
-                <span>Informacion</span>
+                <span>Empleado</span>
             </a>
             <a href="index.php?p=ordenes" class="nav-item <?= $pagina_actual=='ordenes'?'activo':'' ?>">
                 <i class="fas fa-clipboard-list"></i>
