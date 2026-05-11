@@ -36,3 +36,9 @@ de aqui para abajo voy a ir viendo bien de como agregarla informacion de los cli
 -Coreccion de ortografia
 --Se elimino el logo anterior ya que estaba corrompido el archivo y volvi a generarlo, ya debe funcionar y aparecer la foto.
 >>>>>>> 4421aa3869cc3c3ec30d54cb4549fb708d0e05a1
+
+==LUNES 11 DE MAYO==
+-Se agrego interfaz de respaldo (no funciona sin bd)
+-Se agrego un identificador de usuarios en login inicio de sesion pero sin tabla usuarios en bd no funciona
+-se agrego codigo a carpetas de includes e index
+todo lo relacionado a los cambios son para conectar el admin con el empleado (y viceversa) mediante la bd

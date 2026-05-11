@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate that all fields are filled
             if (username && phone && password) {
                 // Redirect to panel
-                window.location.href = 'panel.html';
+                window.location.href = 'panel\.php';
             } else {
                 alert('Por favor completa todos los campos');
             }

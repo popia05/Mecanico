@@ -1,10 +1,18 @@
 <?php
+// ============================================================
+//  Index.php — Panel principal del Administrador
+//  Ruta: views/Administrador/Index.php
+// ============================================================
+require_once '../../php/db_conexion.php';
+require_once '../../php/auth.php';
+
+requerir_admin(); // Redirige al login si no es admin
+
 $pagina = $_GET['p'] ?? 'panel';
 
 $paginas_validas = [
     'panel', 'perfil', 'ordenes', 'gestion',
-    'inventario', 'auditoria', 'nota-remision',
-    'factura', 'configuracion'
+    'inventario', 'auditoria', 'nota-remision', 'cerrar-sesion'
 ];
 
 if (!in_array($pagina, $paginas_validas)) {
@@ -13,15 +21,20 @@ if (!in_array($pagina, $paginas_validas)) {
 
 $titulos = [
     'panel'         => 'Panel Principal',
-    'perfil'        => 'Informacion del Empleado',
+    'perfil'        => 'Información del Administrador',
     'ordenes'       => 'Tareas Asignadas',
-    'gestion'       => 'Gestion de Ordenes',
+    'gestion'       => 'Gestión de Órdenes',
     'inventario'    => 'Inventario',
-    'auditoria'     => 'Auditoria - Panel Admin',
-    'nota-remision' => 'Notas De Remision',
-    'factura'       => 'Factura',
-    'configuracion' => 'Configuracion'
+    'auditoria'     => 'Auditoría',
+    'nota-remision' => 'Notas de Remisión',
+    'respaldo' => 'Respaldo',
+    'cerrar-sesion' => 'Cerrar Sesión',
 ];
+
+// Cerrar sesión
+if (isset($_GET['logout'])) {
+    cerrar_sesion();
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -29,12 +42,12 @@ $titulos = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($titulos[$pagina]) ?> - Auto Master</title>
-    <link rel="stylesheet" href="../CSS/estilos-generales.css">
+    <link rel="stylesheet" href="../../css/estilos-generales.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="contenedor">
-        <?php include '../includes/menu_admin.php'; ?>
+        <?php include '../../includes/menu_admin.php'; ?>
 
         <main class="contenido">
             <header class="cabecera">
@@ -54,6 +67,6 @@ $titulos = [
         </main>
     </div>
 
-    <script src="../JS/menu.js"></script>
+    <script src="../../js/menu.js"></script>
 </body>
 </html>

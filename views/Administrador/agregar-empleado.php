@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="sidebar-logo-texto"><h2>Menu</h2><span>Categorias</span></div>
         </div>
         <nav class="sidebar-nav">
-            <a href="panel.php" class="nav-item"><i class="fas fa-th-large"></i><span>Panel</span></a>
+            <a href="panel.html" class="nav-item"><i class="fas fa-th-large"></i><span>Panel</span></a>
             <div class="nav-item submenu-toggle" onclick="toggleSubmenu('perfil')">
                 <i class="fas fa-user"></i><span>Usuario</span>
                 <i class="fas fa-chevron-down flecha" id="flecha-perfil"></i>
@@ -144,6 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <a href="informacion-clientes.php" class="nav-item"><i class="fas fa-address-card"></i><span>Ver Clientes</span></a>
             </div>
             <a href="nota-remision.php" class="nav-item"><i class="fas fa-file-invoice"></i><span>Notas de Remisión</span></a>
+            <a href="respaldo.php" class="nav-item"><i class="fas fa-database"></i><span>Respaldo</span></a>
             <a href="login.php" class="nav-item"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
         </nav>
         <div class="sidebar-usuario">
@@ -155,11 +156,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- CONTENIDO -->
     <main class="contenido">
         <header class="cabecera">
-            <div class="cabecera-acciones">
-                <button><i class="fas fa-search"></i></button>
-                <button><i class="fas fa-bell"></i></button>
-                <button><i class="fas fa-question-circle"></i></button>
-            </div>
         </header>
 
         <div class="pagina">

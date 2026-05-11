@@ -6,7 +6,7 @@
     <title>Tareas Asignadas - Auto Master</title>
     <!-- tareas-asignadas.php -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../../CSS/estilos-generales.css">
+    <link rel="stylesheet" href="../../css/estilos-generales.css">
 </head>
 <body>
 

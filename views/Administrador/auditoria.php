@@ -1,6 +1,5 @@
 <?php
 // auditoria.php — se incluye desde index.php
-// Solo contiene el contenido interno de la página, sin <html>, <head> ni <body>
 ?>
 
 <!DOCTYPE html>
@@ -72,7 +71,16 @@
                 <a href="auditoria.php" class="nav-item"><i class="fas fa-shield-alt"></i><span>Auditoria</span></a>
             </div>
 
+            <div class="nav-item submenu-toggle" onclick="toggleSubmenu('clientes')">
+                <i class="fas fa-users"></i><span>Clientes</span>
+                <i class="fas fa-chevron-down flecha" id="flecha-clientes"></i>
+            </div>
+            <div class="submenu" id="submenu-clientes">
+                <a href="informacion-clientes.php" class="nav-item"><i class="fas fa-address-card"></i><span>Ver Clientes</span></a>
+            </div>
+
             <a href="nota-remision.php" class="nav-item"><i class="fas fa-file-invoice"></i><span>Notas de Remisión</span></a>
+            <a href="respaldo.php" class="nav-item"><i class="fas fa-database"></i><span>Respaldo</span></a>
             <a href="login.php" class="nav-item"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
         </nav>
         <div class="sidebar-usuario">
@@ -84,12 +92,6 @@
         <!-- CONTENIDO -->
         <main class="contenido">
             <header class="cabecera">
-                
-                <div class="cabecera-acciones">
-                    <button><i class="fas fa-search"></i></button>
-                    <button><i class="fas fa-bell"></i></button>
-                    <button><i class="fas fa-question-circle"></i></button>
-                </div>
             </header>
 
             <div class="pagina">
@@ -135,12 +137,7 @@
                     <!-- Tab Auditoria -->
                     <div class="tab-contenido activo" id="tab-auditoria">
                         <div style="padding: 20px;">
-                            <div class="barra-filtros">
-                                <button class="btn-filtro activo">Todos</button>
-                                <button class="btn-filtro">Orden</button>
-                                <button class="btn-filtro">Inventario</button>
-                                <button class="btn-filtro">Usuario</button>
-                                <button class="btn-filtro">Sistema</button>
+                            
                                 <div class="campo-busqueda">
                                     <i class="fas fa-search" style="color: var(--texto-claro);"></i>
                                     <input type="text" placeholder="Buscar en registros...">
@@ -179,9 +176,9 @@
                     <!-- Tab Empleados -->
                     <div class="tab-contenido" id="tab-empleados">
                         <div style="padding: 20px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+
+                        
                                 <h3>Gestion de Empleados</h3>
-                                <button class="btn btn-primario"><i class="fas fa-user-plus"></i> Nuevo Empleado</button>
                             </div>
                             <table class="tabla">
                                 <thead>
@@ -251,7 +248,6 @@
                         <div style="padding: 20px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                                 <h3>Inventario Completo</h3>
-                                <button class="btn btn-primario"><i class="fas fa-wrench"></i> Agregar Herramienta</button>
                             </div>
                             <table class="tabla">
                                 <thead>
@@ -314,7 +310,7 @@
 
     </div>
 
-    <script src="../JS/menu.js"></script>
+    <script src="../js/menu.js"></script>
     <script>
         function cambiarTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('activo'));

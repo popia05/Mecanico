@@ -1,7 +1,4 @@
-<?php
-// informacion.php — se incluye desde index.php
-// Solo contiene el contenido interno de la página, sin <html>, <head> ni <body>
-?>
+
 
 <div class="pagina-titulo">
     <h2>Detalles de Administrador</h2>

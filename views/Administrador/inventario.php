@@ -201,6 +201,7 @@ $mantenimiento = count(array_filter($items, fn($i) => ($i['estado'] ?? '') === '
             </div>
 
             <a href="nota-remision.php" class="nav-item"><i class="fas fa-file-invoice"></i><span>Notas de Remisión</span></a>
+            <a href="respaldo.php" class="nav-item"><i class="fas fa-database"></i><span>Respaldo</span></a>
             <a href="login.php" class="nav-item"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
         </nav>
         <div class="sidebar-usuario">
@@ -212,11 +213,6 @@ $mantenimiento = count(array_filter($items, fn($i) => ($i['estado'] ?? '') === '
     <!-- CONTENIDO -->
     <main class="contenido">
         <header class="cabecera">
-            <div class="cabecera-acciones">
-                <button><i class="fas fa-search"></i></button>
-                <button><i class="fas fa-bell"></i></button>
-                <button><i class="fas fa-question-circle"></i></button>
-            </div>
         </header>
 
         <div class="pagina">
