@@ -1,17 +1,5 @@
 <?php
-// [BD] Cuando conecten BD, descomentar:
-// require_once __DIR__ . '/../../config/sesion.php';
-// require_once __DIR__ . '/../../models/Tareas.php';
-// $empleadoId = obtenerUsuarioId();
-// $pendientes = contarTareasPorEstado($empleadoId, 'Pendiente');
-// $enProgreso = contarTareasPorEstado($empleadoId, 'En Progreso');
-// $terminadas = contarTareasPorEstado($empleadoId, 'Terminado');
-
-// [DEMO]
-$pendientes = 2;
-$enProgreso = 2;
-$terminadas = 2;
-$nombreEmpleado = 'Daniel';
+require_once '../../php/db_conexion.php';
 ?>
 
 <style>
@@ -193,7 +181,7 @@ $nombreEmpleado = 'Daniel';
     <a href="index.php?p=gestion" class="panel-card">
         <div class="panel-card-icono"><i class="fas fa-clipboard"></i></div>
         <div class="panel-card-cont">
-            <h3>Gestion de Ordenes</h3>
+            <h3>Gestión de Ordenes</h3>
             <p>Vista general de todas tus ordenes de trabajo en un solo lugar</p>
             <span class="panel-card-link">Ver ordenes <i class="fas fa-arrow-right"></i></span>
         </div>

@@ -24,9 +24,15 @@ $p = $_GET['p'] ?? 'panel';
             <i class="fas fa-user"></i><span>Perfil</span>
             <i class="fas fa-chevron-down flecha"></i>
         </div>
+<<<<<<< HEAD
         <div class="submenu <?= in_array($p, ['perfil','ordenes']) ? 'abierto' : '' ?>">
             <a href="index.php?p=perfil" class="nav-item <?= $p === 'perfil' ? 'activo' : '' ?>">
                 <i class="fas fa-info-circle"></i><span>Mi Información</span>
+=======
+        <div class="submenu <?= in_array($p,['perfil','ordenes'])?'abierto':'' ?>">
+            <a href="index.php?p=perfil" class="nav-item <?= $p=='perfil'?'activo':'' ?>">
+                <i class="fas fa-info-circle"></i><span>Empleado</span>
+>>>>>>> 683ace04954e93b1bd1e47192098efb80a94b53f
             </a>
             <a href="index.php?p=ordenes" class="nav-item <?= $p === 'ordenes' ? 'activo' : '' ?>">
                 <i class="fas fa-clipboard-list"></i><span>Ver Tareas Asignadas</span>
