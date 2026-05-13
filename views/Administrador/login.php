@@ -81,7 +81,7 @@ unset($_SESSION['login_error']);
                         </div>
                     </div>
                     <div class="form-footer">
-                        <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+                       <a href="recuperar.php" class="link-olvido">¿Olvidaste tu contraseña?</a>
                     </div>
                     <button type="submit" class="btn-login">Iniciar Sesión</button>
                 </form>
