@@ -36,7 +36,7 @@ $pagina_actual = $_GET['p'] ?? 'panel';
             </a>
         </div>
 
-        <a href="Index.php?p=gestion" class="nav-item <?= $pagina_actual === 'gestion' ? 'activo' : '' ?>">
+        <a href="Index.php?p=gestion-ordenes" class="nav-item <?= $pagina_actual === 'gestion-ordenes' ? 'activo' : '' ?>">
             <i class="fas fa-tasks"></i>
             <span>Gestión de Órdenes</span>
         </a>
@@ -56,9 +56,9 @@ $pagina_actual = $_GET['p'] ?? 'panel';
             <span>Nota de Remisión</span>
         </a>
 
-        <a href="Index.php?p=factura" class="nav-item <?= $pagina_actual === 'factura' ? 'activo' : '' ?>">
-            <i class="fas fa-file-invoice-dollar"></i>
-            <span>Factura</span>
+        <a href="Index.php?p=respaldo" class="nav-item <?= $pagina_actual === 'respaldo' ? 'activo' : '' ?>">
+            <i class="fas fa-database"></i>
+            <span>Respaldo</span>
         </a>
 
         <!-- Cerrar sesión -->

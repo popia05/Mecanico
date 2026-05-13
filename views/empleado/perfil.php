@@ -1,94 +1,313 @@
-<div style="display:flex;align-items:center;gap:15px;margin-bottom:25px;">
-    <button class="btn-volver" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
-    <h2 style="margin:0;">Detalles de Empleado</h2>
-</div>
+<?php
+// ============================================================
+//  perfil.php — Perfil del Mecánico + Cambio de Contraseña
+//  Ruta: views/empleado/perfil.php
+// ============================================================
 
-<div class="grid-perfil">
-    <div class="seccion">
-        <div class="perfil-avatar">
-            <div class="avatar-grande">D</div>
-        </div>
-        <h3 style="text-align:center;color:var(--rojo);font-size:22px;margin-top:15px;">Daniel Garcia Olivas</h3>
-        <p style="text-align:center;color:var(--texto-claro);margin-bottom:25px;">Mecanico</p>
+$id = sesion_empleado_id();
 
-        <h4 style="margin-bottom:15px;">General info</h4>
-        <div class="info-fila">
-            <span>Estatus</span>
-            <span class="badge badge-verde">Activo</span>
-        </div>
-        <div class="info-fila">
-            <span><i class="fas fa-building"></i> Compania</span>
-            <strong style="color:var(--rojo);">Auto Master</strong>
-        </div>
-        <div class="info-fila">
-            <span><i class="fas fa-phone"></i> Numero celular</span>
-            <strong>(430) 065-7387</strong>
-        </div>
-        <div class="info-fila">
-            <span><i class="fas fa-envelope"></i> Email</span>
-            <strong>daniel@automaster.com</strong>
-        </div>
-        <div class="info-fila">
-            <span><i class="fas fa-map-marker-alt"></i> Direccion</span>
-            <strong style="color:var(--rojo);">Agua Prieta, Sonora, Mx</strong>
-        </div>
-    </div>
+// --- Procesar cambio de contraseña ---
+$msg_ok  = '';
+$msg_err = '';
 
-    <div class="seccion">
-        <div class="tabs"><button class="tab activo">Actividad</button></div>
-        <div class="timeline" id="timeline-actividad">
-            <!-- JS llena esto leyendo localStorage -->
-        </div>
-    </div>
-</div>
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_password'])) {
+    $actual   = trim($_POST['password_actual']   ?? '');
+    $nueva    = trim($_POST['password_nueva']     ?? '');
+    $confirma = trim($_POST['password_confirma']  ?? '');
 
-<script>
-// MISMA lista maestra que ordenes.php y nota-remision.php
-const tareasPerfil = [
-    {id:1,veh:'Dodge Atitud 2020',hora:'14:00 - Mar 03, 2026',desc:'Viene a un servicio completo: cambio de bujias, cambio de aceite, cambio de filtros (aceite y aire), tambien escanear el sistema del carro para ver errores.',estadoInicial:'Pendiente',iniciales:['DG','RM']},
-    {id:2,veh:'Nissan Altima 2019',hora:'14:30 - Mar 02, 2026',desc:'Cambio de amortiguadores a carro Nissan Altima, motor 4 cilindros.',estadoInicial:'En Progreso',iniciales:['DG']},
-    {id:3,veh:'Nissan Altima 2018',hora:'14:00 - Mar 01, 2026',desc:'Se realizo cambio de llantas a carro Nissan Altima, motor 4 cilindros.',estadoInicial:'Terminado',iniciales:['DG','RM','LP']},
-    {id:4,veh:'Toyota Corolla 2021',hora:'10:00 - Mar 03, 2026',desc:'Servicio de mantenimiento a carro Toyota Corolla. Cambio de aceite y revision general.',estadoInicial:'Pendiente',iniciales:['DG']},
-    {id:5,veh:'Ford F-150 2022',hora:'09:00 - Feb 28, 2026',desc:'Cambio de balatas delanteras y traseras. Revision de discos de freno.',estadoInicial:'En Progreso',iniciales:['DG','RM']},
-    {id:6,veh:'Chevrolet Spark 2020',hora:'11:30 - Feb 27, 2026',desc:'Diagnostico de falla en sistema electrico. El carro no enciende correctamente.',estadoInicial:'Terminado',iniciales:['DG']},
-];
+    if (!$actual || !$nueva || !$confirma) {
+        $msg_err = 'Completa todos los campos.';
+    } elseif (strlen($nueva) < 6) {
+        $msg_err = 'La nueva contraseña debe tener al menos 6 caracteres.';
+    } elseif ($nueva !== $confirma) {
+        $msg_err = 'Las contraseñas nuevas no coinciden.';
+    } else {
+        // Obtener hash actual de la BD
+        $stmt = $conexion->prepare("SELECT password FROM empleados WHERE id_empleado = :id LIMIT 1");
+        $stmt->execute([':id' => $id]);
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
 
-function renderActividad() {
-    const cambios = JSON.parse(localStorage.getItem('estadosTareas') || '{}');
-    const especs = JSON.parse(localStorage.getItem('especsTareas') || '{}');
-    const colorPorEstado = {'Pendiente':'rojo','En Progreso':'azul','Terminado':'verde'};
+        $hash_actual = $fila['password'] ?? '';
 
-    const html = tareasPerfil.map(t => {
-        const estado = cambios[t.id] || t.estadoInicial;
-        const color = colorPorEstado[estado];
-        const iconoTipo = estado === 'Terminado' ? 'fa-wrench' : 'fa-clock';
-        const especGuardada = especs[t.id];
+        // Si el hash está vacío (primer uso), aceptar cualquier contraseña actual
+        $hash_valido = empty($hash_actual)
+            ? true
+            : password_verify($actual, $hash_actual);
 
-        return `
-            <div class="timeline-item">
-                <div class="timeline-icono"><i class="fas ${iconoTipo}"></i></div>
-                <div class="timeline-contenido">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <strong>${t.veh}</strong>
-                        <span class="badge badge-${color}">${estado}</span>
-                    </div>
-                    <span class="texto-claro">${t.hora}</span>
-                    <div class="caja-mensaje">${t.desc}</div>
-                    ${especGuardada ? `
-                        <div class="caja-mensaje" style="background:#f0f9ff;border-left:3px solid var(--azul);font-size:13px;">
-                            <strong style="color:var(--azul);">Trabajo realizado:</strong><br>${especGuardada}
-                        </div>
-                    ` : ''}
-                    <div class="iniciales">
-                        ${t.iniciales.map(i => `<span>${i}</span>`).join('')}
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    document.getElementById('timeline-actividad').innerHTML = html;
+        if (!$hash_valido) {
+            $msg_err = 'La contraseña actual es incorrecta.';
+        } else {
+            $nuevo_hash = password_hash($nueva, PASSWORD_DEFAULT);
+            $upd = $conexion->prepare("UPDATE empleados SET password = :hash WHERE id_empleado = :id");
+            $upd->execute([':hash' => $nuevo_hash, ':id' => $id]);
+            $msg_ok = 'Contraseña actualizada correctamente.';
+        }
+    }
 }
 
-document.addEventListener('DOMContentLoaded', renderActividad);
+// --- Obtener datos del empleado ---
+$stmt = $conexion->prepare(
+    "SELECT nombre, apellido, correo, telefono, puesto, cargo,
+            fecha_ingreso, foto, especialidad
+     FROM empleados
+     WHERE id_empleado = :id LIMIT 1"
+);
+$stmt->execute([':id' => $id]);
+$emp = $stmt->fetch(PDO::FETCH_ASSOC);
+?>
+
+<div class="perfil-wrapper">
+
+    <!-- ====== TARJETA DE INFORMACIÓN ====== -->
+    <div class="perfil-card">
+        <div class="perfil-avatar">
+            <?php if (!empty($emp['foto'])): ?>
+                <img src="../../uploads/<?= htmlspecialchars($emp['foto']) ?>"
+                     alt="Foto de perfil">
+            <?php else: ?>
+                <div class="avatar-iniciales">
+                    <?= htmlspecialchars(sesion_iniciales()) ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="perfil-info">
+            <h2><?= htmlspecialchars($emp['nombre'] . ' ' . $emp['apellido']) ?></h2>
+            <span class="perfil-puesto"><?= htmlspecialchars($emp['puesto'] ?? 'Mecánico') ?></span>
+
+            <div class="perfil-datos">
+                <div class="dato-item">
+                    <i class="fas fa-envelope"></i>
+                    <span><?= htmlspecialchars($emp['correo']) ?></span>
+                </div>
+                <div class="dato-item">
+                    <i class="fas fa-phone"></i>
+                    <span><?= htmlspecialchars($emp['telefono'] ?? '—') ?></span>
+                </div>
+                <div class="dato-item">
+                    <i class="fas fa-briefcase"></i>
+                    <span><?= htmlspecialchars($emp['cargo'] ?? '—') ?></span>
+                </div>
+                <div class="dato-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Ingreso: <?= htmlspecialchars($emp['fecha_ingreso'] ?? '—') ?></span>
+                </div>
+                <?php if (!empty($emp['especialidad'])): ?>
+                <div class="dato-item">
+                    <i class="fas fa-star"></i>
+                    <span><?= htmlspecialchars($emp['especialidad']) ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== TARJETA CAMBIO DE CONTRASEÑA ====== -->
+    <div class="perfil-card">
+        <h3><i class="fas fa-lock"></i> Cambiar Contraseña</h3>
+
+        <?php if ($msg_ok): ?>
+            <div class="alerta alerta-ok">
+                <i class="fas fa-check-circle"></i> <?= htmlspecialchars($msg_ok) ?>
+            </div>
+        <?php endif; ?>
+        <?php if ($msg_err): ?>
+            <div class="alerta alerta-err">
+                <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($msg_err) ?>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" class="form-password">
+            <input type="hidden" name="cambiar_password" value="1">
+
+            <div class="campo">
+                <label>Contraseña actual</label>
+                <div class="input-ojo">
+                    <input type="password" name="password_actual"
+                           placeholder="Tu contraseña actual" required>
+                    <button type="button" onclick="toggleOjo(this)">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="campo">
+                <label>Nueva contraseña</label>
+                <div class="input-ojo">
+                    <input type="password" name="password_nueva"
+                           placeholder="Mínimo 6 caracteres" required>
+                    <button type="button" onclick="toggleOjo(this)">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="campo">
+                <label>Confirmar nueva contraseña</label>
+                <div class="input-ojo">
+                    <input type="password" name="password_confirma"
+                           placeholder="Repite la nueva contraseña" required>
+                    <button type="button" onclick="toggleOjo(this)">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-guardar">
+                <i class="fas fa-save"></i> Guardar Contraseña
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ====== ESTILOS ====== -->
+<style>
+.perfil-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 600px;
+}
+
+.perfil-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.8rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.perfil-card h3 {
+    margin: 0 0 1.2rem;
+    font-size: 1rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+/* Avatar */
+.perfil-avatar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+.perfil-avatar img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e53935;
+}
+.avatar-iniciales {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #e53935;
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Info */
+.perfil-info { text-align: center; }
+.perfil-info h2 { margin: 0 0 .3rem; font-size: 1.3rem; color: #222; }
+.perfil-puesto {
+    display: inline-block;
+    background: #fce4e4;
+    color: #e53935;
+    padding: .2rem .8rem;
+    border-radius: 20px;
+    font-size: .85rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+.perfil-datos {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    text-align: left;
+    margin-top: .5rem;
+}
+.dato-item {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    font-size: .9rem;
+    color: #555;
+}
+.dato-item i { color: #e53935; width: 16px; }
+
+/* Alertas */
+.alerta {
+    padding: .7rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: .9rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.alerta-ok  { background: #e8f5e9; color: #2e7d32; }
+.alerta-err { background: #ffebee; color: #c62828; }
+
+/* Formulario */
+.form-password { display: flex; flex-direction: column; gap: 1rem; }
+.campo { display: flex; flex-direction: column; gap: .3rem; }
+.campo label { font-size: .85rem; font-weight: 600; color: #444; }
+.input-ojo {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.input-ojo input {
+    flex: 1;
+    border: none;
+    padding: .6rem .8rem;
+    font-size: .95rem;
+    outline: none;
+}
+.input-ojo button {
+    background: #f5f5f5;
+    border: none;
+    padding: 0 .8rem;
+    cursor: pointer;
+    color: #888;
+}
+.input-ojo button:hover { color: #e53935; }
+
+.btn-guardar {
+    background: #e53935;
+    color: #fff;
+    border: none;
+    padding: .7rem 1.5rem;
+    border-radius: 8px;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    align-self: flex-start;
+    transition: background .2s;
+}
+.btn-guardar:hover { background: #c62828; }
+</style>
+
+<!-- ====== SCRIPT OJO ====== -->
+<script>
+function toggleOjo(btn) {
+    const input = btn.closest('.input-ojo').querySelector('input');
+    const icon  = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
 </script>

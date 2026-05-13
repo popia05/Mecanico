@@ -1,19 +1,12 @@
 <?php
 // ============================================================
 //  auth.php — Sistema de autenticación central
-//  Incluir al inicio de cualquier página protegida:
-//    require_once '../../php/auth.php';
-//  Para páginas del admin:
-//    requerir_admin();
-//  Para páginas del mecánico:
-//    requerir_mecanico();
 // ============================================================
 
 session_start();
 
 // ------------------------------------------------------------
 // CREDENCIALES DEL ADMINISTRADOR (fijas en código)
-// Cambia estos valores antes de usar en producción
 // ------------------------------------------------------------
 define('ADMIN_CORREO',   'admin@automaster.com');
 define('ADMIN_TELEFONO', '6331157599');
@@ -21,7 +14,7 @@ define('ADMIN_PASSWORD', 'admin123');
 define('ADMIN_NOMBRE',   'Administrador');
 
 // ------------------------------------------------------------
-// Función principal: procesar login (llamar desde login.php)
+// Función principal: procesar login
 // ------------------------------------------------------------
 function procesar_login(PDO $conexion): void {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
@@ -39,23 +32,21 @@ function procesar_login(PDO $conexion): void {
     if (
         $correo   === ADMIN_CORREO   &&
         $telefono === ADMIN_TELEFONO &&
-        $password === ADMIN_PASSWORD
+        password_verify($password, password_hash(ADMIN_PASSWORD, PASSWORD_DEFAULT))
     ) {
-        $_SESSION['usuario_id']     = 0;
-        $_SESSION['usuario_nombre'] = ADMIN_NOMBRE;
-        $_SESSION['usuario_correo'] = ADMIN_CORREO;
-        $_SESSION['usuario_rol']    = 'admin';
+        $_SESSION['usuario_id']        = 0;
+        $_SESSION['usuario_nombre']    = ADMIN_NOMBRE;
+        $_SESSION['usuario_correo']    = ADMIN_CORREO;
+        $_SESSION['usuario_rol']       = 'admin';
         $_SESSION['usuario_iniciales'] = 'AD';
-        header('Location: ../Administrador/Index.php');
+        header('Location: /Mecanico/views/Administrador/Index.php');
         exit;
     }
 
     // --- ¿Es un mecánico en la BD? ---
     try {
-        // Buscar por correo (la tabla empleados tiene columna "correo" en el nuevo SQL)
-        // Si tu tabla aún no tiene "correo", cambia la condición a "nombre" o similar
         $stmt = $conexion->prepare(
-            "SELECT id_empleado, nombre, apellido, correo, puesto
+            "SELECT id_empleado, nombre, apellido, correo, telefono, password, puesto
              FROM empleados
              WHERE correo = :correo AND activo = 1
              LIMIT 1"
@@ -68,14 +59,8 @@ function procesar_login(PDO $conexion): void {
             return;
         }
 
-        // Verificar teléfono como segundo factor simple
-        // (si aún no tienes columna "telefono", quita esta verificación)
-        $stmt2 = $conexion->prepare(
-            "SELECT telefono FROM empleados WHERE id_empleado = :id LIMIT 1"
-        );
-        $stmt2->execute([':id' => $empleado['id_empleado']]);
-        $fila = $stmt2->fetch(PDO::FETCH_ASSOC);
-        $tel_bd = preg_replace('/\D/', '', $fila['telefono'] ?? '');
+        // Verificar teléfono
+        $tel_bd    = preg_replace('/\D/', '', $empleado['telefono'] ?? '');
         $tel_input = preg_replace('/\D/', '', $telefono);
 
         if ($tel_bd !== $tel_input) {
@@ -83,9 +68,8 @@ function procesar_login(PDO $conexion): void {
             return;
         }
 
-        // La contraseña para mecánicos es su correo electrónico por defecto.
-        // Puedes cambiar esto cuando agregues la tabla usuarios.
-        if ($password !== $correo) {
+        // Verificar contraseña con hash
+        if (!password_verify($password, $empleado['password'])) {
             $_SESSION['login_error'] = 'Contraseña incorrecta.';
             return;
         }
@@ -104,7 +88,7 @@ function procesar_login(PDO $conexion): void {
         $_SESSION['usuario_iniciales'] = $iniciales;
         $_SESSION['empleado_id']       = $empleado['id_empleado'];
 
-        header('Location: ../empleado/index.php');
+        header('Location: /Mecanico/views/empleado/index.php');
         exit;
 
     } catch (PDOException $e) {
@@ -113,7 +97,7 @@ function procesar_login(PDO $conexion): void {
 }
 
 // ------------------------------------------------------------
-// Proteger páginas: redirige al login si no hay sesión activa
+// Proteger páginas
 // ------------------------------------------------------------
 function requerir_sesion(): void {
     if (empty($_SESSION['usuario_rol'])) {
@@ -125,6 +109,7 @@ function requerir_sesion(): void {
 function requerir_admin(): void {
     requerir_sesion();
     if ($_SESSION['usuario_rol'] !== 'admin') {
+        // Si es mecánico lo manda a su panel, si no tiene sesión ya fue al login
         header('Location: /Mecanico/views/empleado/index.php');
         exit;
     }
@@ -133,7 +118,8 @@ function requerir_admin(): void {
 function requerir_mecanico(): void {
     requerir_sesion();
     if ($_SESSION['usuario_rol'] !== 'mecanico') {
-        header('Location: /Mecanico/views/Administrador/Index.php');
+        // ✅ Corregido: ya no manda al admin, manda al login
+        header('Location: /Mecanico/views/Administrador/login.php');
         exit;
     }
 }
@@ -148,7 +134,7 @@ function cerrar_sesion(): void {
 }
 
 // ------------------------------------------------------------
-// Helpers de sesión (usar en cualquier vista)
+// Helpers de sesión
 // ------------------------------------------------------------
 function sesion_nombre(): string    { return $_SESSION['usuario_nombre']    ?? 'Usuario'; }
 function sesion_iniciales(): string { return $_SESSION['usuario_iniciales'] ?? 'U'; }

@@ -1,18 +1,17 @@
 <?php
-// ============================================================
-//  Index.php — Panel principal del Administrador
-//  Ruta: views/Administrador/Index.php
-// ============================================================
 require_once '../../php/db_conexion.php';
 require_once '../../php/auth.php';
 
-requerir_admin(); // Redirige al login si no es admin
+requerir_admin();
 
 $pagina = $_GET['p'] ?? 'panel';
 
 $paginas_validas = [
-    'panel', 'perfil', 'ordenes', 'gestion',
-    'inventario', 'auditoria', 'nota-remision', 'cerrar-sesion'
+    'panel', 'perfil', 'ordenes', 'gestion-ordenes',
+    'inventario', 'auditoria', 'nota-remision',
+    'respaldo', 'informacion-admin', 'informacion-empleados',
+    'informacion-clientes', 'agregar-empleado', 'tareas-asignadas',
+    'informacion', 'editar-empleado'
 ];
 
 if (!in_array($pagina, $paginas_validas)) {
@@ -20,15 +19,21 @@ if (!in_array($pagina, $paginas_validas)) {
 }
 
 $titulos = [
-    'panel'         => 'Panel Principal',
-    'perfil'        => 'Información del Administrador',
-    'ordenes'       => 'Tareas Asignadas',
-    'gestion'       => 'Gestión de Órdenes',
-    'inventario'    => 'Inventario',
-    'auditoria'     => 'Auditoría',
-    'nota-remision' => 'Notas de Remisión',
-    'respaldo' => 'Respaldo',
-    'cerrar-sesion' => 'Cerrar Sesión',
+    'panel'                 => 'Panel Principal',
+    'perfil'                => 'Información del Administrador',
+    'ordenes'               => 'Tareas Asignadas',
+    'gestion-ordenes'       => 'Gestión de Órdenes',
+    'inventario'            => 'Inventario',
+    'auditoria'             => 'Auditoría',
+    'nota-remision'         => 'Notas de Remisión',
+    'respaldo'              => 'Respaldo',
+    'informacion-admin'     => 'Información Admin',
+    'informacion-empleados' => 'Información Empleados',
+    'informacion-clientes'  => 'Información Clientes',
+    'agregar-empleado'      => 'Agregar Empleado',
+    'tareas-asignadas'      => 'Tareas Asignadas',
+    'informacion'           => 'Información',
+    'editar-empleado'       => 'Editar Empleado',
 ];
 
 // Cerrar sesión
