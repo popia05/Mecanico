@@ -17,13 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_nota'])) {
     $observaciones  = trim($_POST['observaciones'] ?? '');
 
     try {
-        // Actualizar servicio si existe, o insertar
         if ($id_servicio) {
             $sql = "UPDATE servicios SET descripcion_falla=:d, reparacion_realizada=:r, costo_total=:c, fecha_ingreso=:fi WHERE id_servicio=:id";
             $stmt = $conexion->prepare($sql);
             $stmt->execute([':d'=>$descripcion,':r'=>$observaciones,':c'=>$costo_total,':fi'=>$fecha_ingreso,':id'=>$id_servicio]);
         } else {
-            // Obtener id_vehiculo y id_empleado de la orden
             $ord = $conexion->prepare("SELECT id_mecanico FROM ordenes WHERE id_orden=:id");
             $ord->execute([':id'=>$id_orden]);
             $orden_data = $ord->fetch(PDO::FETCH_ASSOC);
@@ -39,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_nota'])) {
     }
 }
 
-// Obtener clientes para el select
+// Obtener clientes
 $clientes = [];
 try {
     $stmt = $conexion->query("SELECT id_cliente, nombre, apellido, placa, marca_carro, modelo_carro FROM clientes ORDER BY nombre ASC");
@@ -59,9 +57,9 @@ try {
     $ordenes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) { $ordenes = []; }
 
-// Orden seleccionada (si viene por GET)
-$orden_sel = null;
-$cliente_sel = null;
+// Orden seleccionada
+$orden_sel    = null;
+$cliente_sel  = null;
 $servicio_sel = null;
 
 if (isset($_GET['id_orden'])) {
@@ -77,17 +75,37 @@ if (isset($_GET['id_orden'])) {
         $orden_sel = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($orden_sel) {
-            // Buscar cliente por placa (vehiculo contiene la placa o nombre)
-            $stmt2 = $conexion->query("SELECT * FROM clientes LIMIT 1");
-            // intentar match por nombre del cliente en la orden
+            // Buscar cliente
             $stmt2 = $conexion->prepare("SELECT * FROM clientes WHERE CONCAT(nombre,' ',apellido) LIKE :c OR placa LIKE :p LIMIT 1");
             $stmt2->execute([':c' => '%'.$orden_sel['cliente'].'%', ':p' => '%'.$orden_sel['vehiculo'].'%']);
             $cliente_sel = $stmt2->fetch(PDO::FETCH_ASSOC);
 
-            // Buscar servicio asociado al empleado de esta orden
-            $stmt3 = $conexion->prepare("SELECT * FROM servicios WHERE id_empleado = :e ORDER BY id_servicio DESC LIMIT 1");
-            $stmt3->execute([':e' => $orden_sel['id_mecanico'] ?? 0]);
+            // ── MODIFICADO: buscar servicio por empleado + fecha de la orden ──
+            // Primero intenta por fecha exacta
+            $stmt3 = $conexion->prepare("
+                SELECT * FROM servicios
+                WHERE id_empleado = :e
+                AND fecha_ingreso = DATE(:fecha)
+                ORDER BY id_servicio DESC
+                LIMIT 1
+            ");
+            $stmt3->execute([
+                ':e'     => $orden_sel['id_mecanico'] ?? 0,
+                ':fecha' => $orden_sel['fecha_creacion']
+            ]);
             $servicio_sel = $stmt3->fetch(PDO::FETCH_ASSOC);
+
+            // Si no encuentra por fecha, trae el más reciente del mecánico
+            if (!$servicio_sel) {
+                $stmt3 = $conexion->prepare("
+                    SELECT * FROM servicios
+                    WHERE id_empleado = :e
+                    ORDER BY id_servicio DESC
+                    LIMIT 1
+                ");
+                $stmt3->execute([':e' => $orden_sel['id_mecanico'] ?? 0]);
+                $servicio_sel = $stmt3->fetch(PDO::FETCH_ASSOC);
+            }
         }
     } catch (PDOException $e) { $orden_sel = null; }
 }
@@ -109,7 +127,6 @@ if (isset($_GET['id_orden'])) {
         }
         @media (max-width: 768px) { .nota-layout { grid-template-columns: 1fr; } }
 
-        /* ── Selector de orden ── */
         .select-orden {
             background: var(--tarjeta,#fff);
             border-radius: 16px;
@@ -121,7 +138,6 @@ if (isset($_GET['id_orden'])) {
         .select-orden .form-grupo { flex: 1; min-width: 200px; margin: 0; }
         .select-style { width:100%; padding:10px 14px; border-radius:10px; border:1.5px solid var(--borde,#e5e7eb); font-size:14px; background:#fff; }
 
-        /* ── Documento nota ── */
         .nota-doc {
             background: var(--tarjeta,#fff);
             border-radius: 16px;
@@ -129,13 +145,9 @@ if (isset($_GET['id_orden'])) {
             box-shadow: 0 2px 10px rgba(0,0,0,0.06);
         }
 
-        /* Header empresa */
         .nota-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px; padding-bottom: 16px;
             border-bottom: 2px solid var(--borde,#f0f0f0);
         }
         .nota-empresa h3 { font-size: 18px; font-weight: 800; margin: 0 0 4px; color: var(--texto,#111); }
@@ -151,11 +163,9 @@ if (isset($_GET['id_orden'])) {
             text-transform: uppercase; margin-bottom: 20px;
         }
 
-        /* Campos del documento */
         .nota-campo {
             display: flex; align-items: flex-start; gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--borde,#f5f5f5);
+            padding: 12px 0; border-bottom: 1px solid var(--borde,#f5f5f5);
         }
         .nota-campo:last-of-type { border-bottom: none; }
         .nota-campo-icono {
@@ -187,13 +197,46 @@ if (isset($_GET['id_orden'])) {
         }
         .nota-campo-textarea:focus { border-color: #e05a6e; }
 
-        /* Panel derecho — total */
-        .nota-panel {
-            display: flex; flex-direction: column; gap: 16px;
+        /* ── Bloque reparación del mecánico ── */
+        .reparacion-mecanico {
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            border-radius: 10px;
         }
+        .reparacion-mecanico-label {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #16a34a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .reparacion-mecanico-texto {
+            font-size: 13px;
+            color: #166534;
+            line-height: 1.6;
+        }
+        .reparacion-vacia {
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: #fefce8;
+            border: 1.5px solid #fde047;
+            border-radius: 10px;
+            font-size: 12.5px;
+            color: #854d0e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nota-panel { display: flex; flex-direction: column; gap: 16px; }
         .panel-estado {
-            background: var(--tarjeta,#fff);
-            border-radius: 16px; padding: 20px;
+            background: var(--tarjeta,#fff); border-radius: 16px; padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.06);
             display: flex; flex-direction: column; gap: 12px;
         }
@@ -206,8 +249,7 @@ if (isset($_GET['id_orden'])) {
         .panel-estado-icono { font-size: 20px; }
 
         .panel-total {
-            background: #e05a6e;
-            border-radius: 16px; padding: 24px 20px;
+            background: #e05a6e; border-radius: 16px; padding: 24px 20px;
             box-shadow: 0 4px 20px rgba(224,90,110,0.35);
             color: #fff; text-align: center;
         }
@@ -222,21 +264,18 @@ if (isset($_GET['id_orden'])) {
         }
         .btn-pagar:hover { background: #333; }
 
-        /* Botones pie */
         .nota-footer {
             display: flex; justify-content: flex-end; gap: 12px;
             margin-top: 24px; padding-top: 20px;
             border-top: 1px solid var(--borde,#f0f0f0);
         }
 
-        /* Toast */
         .toast { position:fixed; top:24px; right:24px; z-index:9999; display:flex; align-items:center; gap:12px; padding:16px 24px; border-radius:12px; font-size:15px; font-weight:600; box-shadow:0 8px 32px rgba(0,0,0,0.18); animation:slideIn 0.4s ease, fadeOut 0.5s ease 3.5s forwards; pointer-events:none; }
         .toast.exito { background:#22c55e; color:#fff; }
         .toast.error { background:#ef4444; color:#fff; }
         @keyframes slideIn { from{opacity:0;transform:translateX(60px)} to{opacity:1;transform:translateX(0)} }
         @keyframes fadeOut { to{opacity:0;transform:translateX(60px)} }
 
-        /* Print */
         @media print {
             .sidebar, .cabecera, .select-orden, .nota-footer, .panel-estado, .btn-pagar { display: none !important; }
             .nota-layout { grid-template-columns: 1fr; }
@@ -331,19 +370,20 @@ if (isset($_GET['id_orden'])) {
 
             <?php if ($orden_sel): ?>
             <form method="POST" action="nota-remision.php" id="form-nota">
-                <input type="hidden" name="id_orden" value="<?= $orden_sel['id_orden'] ?>">
-                <input type="hidden" name="id_cliente" value="<?= $cliente_sel['id_cliente'] ?? 0 ?>">
+                <input type="hidden" name="id_orden"    value="<?= $orden_sel['id_orden'] ?>">
+                <input type="hidden" name="id_cliente"  value="<?= $cliente_sel['id_cliente'] ?? 0 ?>">
                 <input type="hidden" name="id_servicio" value="<?= $servicio_sel['id_servicio'] ?? 0 ?>">
 
                 <div class="nota-layout">
-                    <!-- Columna izquierda: documento -->
+                    <!-- Columna izquierda -->
                     <div class="nota-doc">
-                        <!-- Header empresa -->
                         <div class="nota-header">
                             <div class="nota-empresa">
                                 <h3>Auto Master</h3>
                                 <p>Fuel Injection · Agua Prieta, Sonora, MX</p>
-                                <p style="margin-top:4px; font-size:11px; color:var(--color-gris,#aaa);">Folio #<?= str_pad($orden_sel['id_orden'], 4, '0', STR_PAD_LEFT) ?></p>
+                                <p style="margin-top:4px; font-size:11px; color:var(--color-gris,#aaa);">
+                                    Folio #<?= str_pad($orden_sel['id_orden'], 4, '0', STR_PAD_LEFT) ?>
+                                </p>
                             </div>
                             <div class="nota-logo"><i class="fas fa-wrench"></i></div>
                         </div>
@@ -365,7 +405,7 @@ if (isset($_GET['id_orden'])) {
                             </div>
                         </div>
 
-                        <!-- Placas -->
+                        <!-- Vehículo -->
                         <div class="nota-campo">
                             <div class="nota-campo-icono azul"><i class="fas fa-car"></i></div>
                             <div class="nota-campo-contenido">
@@ -388,14 +428,35 @@ if (isset($_GET['id_orden'])) {
                             </div>
                         </div>
 
-                        <!-- Descripción del servicio -->
+                        <!-- Descripción del servicio (editable por admin) -->
                         <div class="nota-campo">
                             <div class="nota-campo-icono rosa"><i class="fas fa-pen"></i></div>
                             <div class="nota-campo-contenido">
                                 <div class="nota-campo-label">Descripción del servicio</div>
                                 <textarea name="descripcion" class="nota-campo-textarea"
-                                          placeholder="Describe el servicio realizado, costos parciales, observaciones..."
+                                    placeholder="Describe el servicio realizado, costos parciales, observaciones..."
                                 ><?= htmlspecialchars($servicio_sel['descripcion_falla'] ?? $orden_sel['servicio'] ?? '') ?></textarea>
+
+                                <!-- ── NUEVO: Reparación reportada por el mecánico ── -->
+                                <?php if (!empty($servicio_sel['reparacion_realizada'])): ?>
+                                <div class="reparacion-mecanico">
+                                    <div class="reparacion-mecanico-label">
+                                        <i class="fas fa-check-circle"></i>
+                                        Reparación reportada por el mecánico
+                                        <span style="background:#bbf7d0; color:#166534; font-size:10px; padding:2px 8px; border-radius:10px; margin-left:4px;">
+                                            <?= htmlspecialchars($orden_sel['mecanico_nombre'] ?? '') ?>
+                                        </span>
+                                    </div>
+                                    <div class="reparacion-mecanico-texto">
+                                        <?= nl2br(htmlspecialchars($servicio_sel['reparacion_realizada'])) ?>
+                                    </div>
+                                </div>
+                                <?php else: ?>
+                                <div class="reparacion-vacia">
+                                    <i class="fas fa-clock"></i>
+                                    El mecánico aún no ha reportado la reparación realizada.
+                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
 
@@ -450,9 +511,8 @@ if (isset($_GET['id_orden'])) {
                         </div>
                     </div>
 
-                    <!-- Columna derecha: panel estado + total -->
+                    <!-- Columna derecha -->
                     <div class="nota-panel">
-                        <!-- Estado de la orden -->
                         <div class="panel-estado">
                             <p style="font-size:12px; font-weight:700; color:var(--color-gris,#888); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 4px;">Estado de la orden</p>
                             <div class="panel-estado-item">
@@ -466,8 +526,10 @@ if (isset($_GET['id_orden'])) {
                                 </span>
                             </div>
                             <div class="panel-estado-item">
-                                <span>Descripción del servicio</span>
-                                <span class="panel-estado-icono" style="color:#2563eb;">✎</span>
+                                <span>Reparación reportada</span>
+                                <span class="panel-estado-icono" style="color:<?= !empty($servicio_sel['reparacion_realizada']) ? '#16a34a' : '#f59e0b' ?>;">
+                                    <?= !empty($servicio_sel['reparacion_realizada']) ? '✓' : '⏳' ?>
+                                </span>
                             </div>
                             <div class="panel-estado-item">
                                 <span>Estado: <strong><?= $orden_sel['estado'] ?></strong></span>
@@ -478,7 +540,6 @@ if (isset($_GET['id_orden'])) {
                             </div>
                         </div>
 
-                        <!-- Total -->
                         <div class="panel-total">
                             <div class="panel-total-label">Total</div>
                             <div class="panel-total-monto" id="total-display">
@@ -492,7 +553,6 @@ if (isset($_GET['id_orden'])) {
             </form>
 
             <?php else: ?>
-            <!-- Estado vacío -->
             <div style="text-align:center; padding:60px 20px; color:var(--color-gris,#888);">
                 <i class="fas fa-file-invoice" style="font-size:52px; margin-bottom:16px; display:block; color:#e0e0e0;"></i>
                 <p style="font-size:16px; font-weight:600; color:#555;">Selecciona una orden para generar la nota</p>
@@ -512,16 +572,15 @@ if (isset($_GET['id_orden'])) {
 
 <script src="../../js/menu.js"></script>
 <script>
-    function cargarOrden(id) {
-        if (!id) return;
-        window.location.href = 'nota-remision.php?id_orden=' + id;
-    }
-
-    function actualizarTotal(val) {
-        const n = parseFloat(val) || 0;
-        document.getElementById('total-display').textContent =
-            '$' + n.toLocaleString('es-MX', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-    }
+function cargarOrden(id) {
+    if (!id) return;
+    window.location.href = 'nota-remision.php?id_orden=' + id;
+}
+function actualizarTotal(val) {
+    const n = parseFloat(val) || 0;
+    document.getElementById('total-display').textContent =
+        '$' + n.toLocaleString('es-MX', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+}
 </script>
 </body>
 </html>

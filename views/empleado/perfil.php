@@ -1,313 +1,272 @@
 <?php
-// ============================================================
-//  perfil.php — Perfil del Mecánico + Cambio de Contraseña
-//  Ruta: views/empleado/perfil.php
-// ============================================================
+session_start();
+require_once '../../php/db_conexion.php';
 
-$id = sesion_empleado_id();
+$page_title = 'Mi Perfil - Auto Master';
 
-// --- Procesar cambio de contraseña ---
-$msg_ok  = '';
-$msg_err = '';
+$id_empleado = $_SESSION['id_empleado'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cambiar_password'])) {
-    $actual   = trim($_POST['password_actual']   ?? '');
-    $nueva    = trim($_POST['password_nueva']     ?? '');
-    $confirma = trim($_POST['password_confirma']  ?? '');
+$stmt = $conexion->prepare("SELECT * FROM empleados WHERE id_empleado = ?");
+$stmt->execute([$id_empleado]);
+$empleado = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$actual || !$nueva || !$confirma) {
-        $msg_err = 'Completa todos los campos.';
-    } elseif (strlen($nueva) < 6) {
-        $msg_err = 'La nueva contraseña debe tener al menos 6 caracteres.';
-    } elseif ($nueva !== $confirma) {
-        $msg_err = 'Las contraseñas nuevas no coinciden.';
-    } else {
-        // Obtener hash actual de la BD
-        $stmt = $conexion->prepare("SELECT password FROM empleados WHERE id_empleado = :id LIMIT 1");
-        $stmt->execute([':id' => $id]);
-        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+$nombre_completo = htmlspecialchars($empleado['nombre'] . ' ' . $empleado['apellido']);
+$iniciales       = strtoupper(substr($empleado['nombre'], 0, 1) . substr($empleado['apellido'], 0, 1));
+$foto            = $empleado['foto'] ?? null;
 
-        $hash_actual = $fila['password'] ?? '';
-
-        // Si el hash está vacío (primer uso), aceptar cualquier contraseña actual
-        $hash_valido = empty($hash_actual)
-            ? true
-            : password_verify($actual, $hash_actual);
-
-        if (!$hash_valido) {
-            $msg_err = 'La contraseña actual es incorrecta.';
-        } else {
-            $nuevo_hash = password_hash($nueva, PASSWORD_DEFAULT);
-            $upd = $conexion->prepare("UPDATE empleados SET password = :hash WHERE id_empleado = :id");
-            $upd->execute([':hash' => $nuevo_hash, ':id' => $id]);
-            $msg_ok = 'Contraseña actualizada correctamente.';
-        }
-    }
+// Contar órdenes del empleado
+$stmt = $conexion->prepare("SELECT estado, COUNT(*) as total FROM ordenes WHERE id_mecanico = ? GROUP BY estado");
+$stmt->execute([$id_empleado]);
+$conteos = ['Pendiente' => 0, 'En Progreso' => 0, 'Terminado' => 0];
+foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    $conteos[$row['estado']] = $row['total'];
 }
 
-// --- Obtener datos del empleado ---
-$stmt = $conexion->prepare(
-    "SELECT nombre, apellido, correo, telefono, puesto, cargo,
-            fecha_ingreso, foto, especialidad
-     FROM empleados
-     WHERE id_empleado = :id LIMIT 1"
-);
-$stmt->execute([':id' => $id]);
-$emp = $stmt->fetch(PDO::FETCH_ASSOC);
+include 'header.php';
 ?>
 
-<div class="perfil-wrapper">
-
-    <!-- ====== TARJETA DE INFORMACIÓN ====== -->
-    <div class="perfil-card">
-        <div class="perfil-avatar">
-            <?php if (!empty($emp['foto'])): ?>
-                <img src="../../uploads/<?= htmlspecialchars($emp['foto']) ?>"
-                     alt="Foto de perfil">
-            <?php else: ?>
-                <div class="avatar-iniciales">
-                    <?= htmlspecialchars(sesion_iniciales()) ?>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <div class="perfil-info">
-            <h2><?= htmlspecialchars($emp['nombre'] . ' ' . $emp['apellido']) ?></h2>
-            <span class="perfil-puesto"><?= htmlspecialchars($emp['puesto'] ?? 'Mecánico') ?></span>
-
-            <div class="perfil-datos">
-                <div class="dato-item">
-                    <i class="fas fa-envelope"></i>
-                    <span><?= htmlspecialchars($emp['correo']) ?></span>
-                </div>
-                <div class="dato-item">
-                    <i class="fas fa-phone"></i>
-                    <span><?= htmlspecialchars($emp['telefono'] ?? '—') ?></span>
-                </div>
-                <div class="dato-item">
-                    <i class="fas fa-briefcase"></i>
-                    <span><?= htmlspecialchars($emp['cargo'] ?? '—') ?></span>
-                </div>
-                <div class="dato-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Ingreso: <?= htmlspecialchars($emp['fecha_ingreso'] ?? '—') ?></span>
-                </div>
-                <?php if (!empty($emp['especialidad'])): ?>
-                <div class="dato-item">
-                    <i class="fas fa-star"></i>
-                    <span><?= htmlspecialchars($emp['especialidad']) ?></span>
-                </div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-
-    <!-- ====== TARJETA CAMBIO DE CONTRASEÑA ====== -->
-    <div class="perfil-card">
-        <h3><i class="fas fa-lock"></i> Cambiar Contraseña</h3>
-
-        <?php if ($msg_ok): ?>
-            <div class="alerta alerta-ok">
-                <i class="fas fa-check-circle"></i> <?= htmlspecialchars($msg_ok) ?>
-            </div>
-        <?php endif; ?>
-        <?php if ($msg_err): ?>
-            <div class="alerta alerta-err">
-                <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($msg_err) ?>
-            </div>
-        <?php endif; ?>
-
-        <form method="POST" class="form-password">
-            <input type="hidden" name="cambiar_password" value="1">
-
-            <div class="campo">
-                <label>Contraseña actual</label>
-                <div class="input-ojo">
-                    <input type="password" name="password_actual"
-                           placeholder="Tu contraseña actual" required>
-                    <button type="button" onclick="toggleOjo(this)">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="campo">
-                <label>Nueva contraseña</label>
-                <div class="input-ojo">
-                    <input type="password" name="password_nueva"
-                           placeholder="Mínimo 6 caracteres" required>
-                    <button type="button" onclick="toggleOjo(this)">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="campo">
-                <label>Confirmar nueva contraseña</label>
-                <div class="input-ojo">
-                    <input type="password" name="password_confirma"
-                           placeholder="Repite la nueva contraseña" required>
-                    <button type="button" onclick="toggleOjo(this)">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-
-            <button type="submit" class="btn-guardar">
-                <i class="fas fa-save"></i> Guardar Contraseña
-            </button>
-        </form>
-    </div>
-</div>
-
-<!-- ====== ESTILOS ====== -->
 <style>
-.perfil-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    max-width: 600px;
-}
+    .perfil-grid {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 24px;
+        align-items: start;
+    }
 
-.perfil-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 1.8rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,.08);
-}
+    /* ── Card avatar ── */
+    .card-avatar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 28px 32px;
+        text-align: center;
+    }
+    .avatar-circle {
+        width: 110px; height: 110px;
+        background: var(--accent);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 42px; font-weight: 700;
+        margin-bottom: 20px;
+        box-shadow: 0 6px 28px rgba(229,57,53,0.30);
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
 
-.perfil-card h3 {
-    margin: 0 0 1.2rem;
-    font-size: 1rem;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-}
+    .avatar-nombre { font-size: 18px; font-weight: 700; color: #1e2238; margin-bottom: 6px; }
+    .avatar-puesto {
+        font-size: 12.5px;
+        background: #fef2f2;
+        color: var(--accent);
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-bottom: 24px;
+    }
 
-/* Avatar */
-.perfil-avatar {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 1rem;
-}
-.perfil-avatar img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #e53935;
-}
-.avatar-iniciales {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: #e53935;
-    color: #fff;
-    font-size: 2rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    /* Stats rápidos */
+    .avatar-stats {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 4px;
+    }
+    .stat-item {
+        background: #f8faff;
+        border-radius: 12px;
+        padding: 14px 8px;
+        text-align: center;
+        border: 1px solid var(--border);
+    }
+    .stat-num { font-size: 22px; font-weight: 700; color: #1e2238; }
+    .stat-label { font-size: 11px; color: #64748b; margin-top: 3px; }
+    .stat-item.azul .stat-num    { color: #3b82f6; }
+    .stat-item.naranja .stat-num { color: #f59e0b; }
+    .stat-item.verde .stat-num   { color: #22c55e; }
 
-/* Info */
-.perfil-info { text-align: center; }
-.perfil-info h2 { margin: 0 0 .3rem; font-size: 1.3rem; color: #222; }
-.perfil-puesto {
-    display: inline-block;
-    background: #fce4e4;
-    color: #e53935;
-    padding: .2rem .8rem;
-    border-radius: 20px;
-    font-size: .85rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
-.perfil-datos {
-    display: flex;
-    flex-direction: column;
-    gap: .6rem;
-    text-align: left;
-    margin-top: .5rem;
-}
-.dato-item {
-    display: flex;
-    align-items: center;
-    gap: .7rem;
-    font-size: .9rem;
-    color: #555;
-}
-.dato-item i { color: #e53935; width: 16px; }
+    /* ── Card info ── */
+    .card-info { padding: 0; }
+    .card-info .card-header { margin-bottom: 0; }
 
-/* Alertas */
-.alerta {
-    padding: .7rem 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    font-size: .9rem;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-}
-.alerta-ok  { background: #e8f5e9; color: #2e7d32; }
-.alerta-err { background: #ffebee; color: #c62828; }
+    .info-lista { padding: 8px 0; }
 
-/* Formulario */
-.form-password { display: flex; flex-direction: column; gap: 1rem; }
-.campo { display: flex; flex-direction: column; gap: .3rem; }
-.campo label { font-size: .85rem; font-weight: 600; color: #444; }
-.input-ojo {
-    display: flex;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-}
-.input-ojo input {
-    flex: 1;
-    border: none;
-    padding: .6rem .8rem;
-    font-size: .95rem;
-    outline: none;
-}
-.input-ojo button {
-    background: #f5f5f5;
-    border: none;
-    padding: 0 .8rem;
-    cursor: pointer;
-    color: #888;
-}
-.input-ojo button:hover { color: #e53935; }
+    .info-row {
+        display: flex;
+        align-items: center;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        gap: 16px;
+        transition: background 0.15s;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row:hover { background: #f8faff; }
 
-.btn-guardar {
-    background: #e53935;
-    color: #fff;
-    border: none;
-    padding: .7rem 1.5rem;
-    border-radius: 8px;
-    font-size: .95rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    align-self: flex-start;
-    transition: background .2s;
-}
-.btn-guardar:hover { background: #c62828; }
+    .info-row-icon {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    .icon-azul   { background: #eff6ff; color: #3b82f6; }
+    .icon-rosa   { background: #fdf2f8; color: var(--accent); }
+    .icon-verde  { background: #f0fdf4; color: #22c55e; }
+    .icon-naranja{ background: #fffbeb; color: #f59e0b; }
+    .icon-morado { background: #f5f3ff; color: #7c3aed; }
+    .icon-gris   { background: #f1f5f9; color: #64748b; }
+
+    .info-row-content { flex: 1; }
+    .info-row-label { font-size: 11.5px; color: #94a3b8; font-weight: 500; margin-bottom: 3px; }
+    .info-row-valor { font-size: 14px; font-weight: 600; color: #1e2238; }
+    .info-row-valor.link { color: #4f8ef7; }
+    .info-row-valor.activo { color: #22c55e; }
+
+    .badge-activo-lg {
+        background: #dcfce7;
+        color: #16a34a;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 14px;
+        border-radius: 20px;
+    }
+
+    @media (max-width: 900px) {
+        .perfil-grid { grid-template-columns: 1fr; }
+    }
 </style>
 
-<!-- ====== SCRIPT OJO ====== -->
+<!-- Título -->
+<div class="pagina-titulo">
+    <h2><i class="fas fa-user-circle"></i> Mi Perfil</h2>
+    <p>Información personal de tu cuenta</p>
+</div>
+
+<div class="perfil-grid">
+
+    <!-- Columna izquierda: avatar + stats -->
+    <div class="card">
+        <div class="card-avatar">
+            <div class="avatar-circle">
+                <?php if ($foto): ?>
+                    <img src="../../uploads/<?= htmlspecialchars($foto) ?>" alt="foto">
+                <?php else: ?>
+                    <?= $iniciales ?>
+                <?php endif; ?>
+            </div>
+            <div class="avatar-nombre"><?= $nombre_completo ?></div>
+            <div class="avatar-puesto"><?= htmlspecialchars($empleado['puesto'] ?? 'Mecánico') ?></div>
+
+            <div class="avatar-stats">
+                <div class="stat-item azul">
+                    <div class="stat-num"><?= $conteos['En Progreso'] ?></div>
+                    <div class="stat-label">En Progreso</div>
+                </div>
+                <div class="stat-item naranja">
+                    <div class="stat-num"><?= $conteos['Pendiente'] ?></div>
+                    <div class="stat-label">Pendientes</div>
+                </div>
+                <div class="stat-item verde">
+                    <div class="stat-num"><?= $conteos['Terminado'] ?></div>
+                    <div class="stat-label">Terminadas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna derecha: info detallada -->
+    <div class="card card-info">
+        <div class="card-header">
+            <i class="fas fa-id-card"></i> Información General
+        </div>
+        <div class="info-lista">
+
+            <div class="info-row">
+                <div class="info-row-icon icon-azul"><i class="fas fa-user"></i></div>
+                <div class="info-row-content">
+                    <div class="info-row-label">Nombre completo</div>
+                    <div class="info-row-valor"><?= $nombre_completo ?></div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-row-icon icon-rosa"><i class="fas fa-envelope"></i></div>
+                <div class="info-row-content">
+                    <div class="info-row-label">Correo electrónico</div>
+                    <div class="info-row-valor link"><?= htmlspecialchars($empleado['correo']) ?></div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-row-icon icon-verde"><i class="fas fa-phone"></i></div>
+                <div class="info-row-content">
+                    <div class="info-row-label">Teléfono</div>
+                    <div class="info-row-valor"><?= htmlspecialchars($empleado['telefono'] ?? '—') ?></div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-row-icon icon-naranja"><i class="fas fa-briefcase"></i></div>
+                <div class="info-row-content">
+                    <div class="info-row-label">Puesto</div>
+                    <div class="info-row-valor"><?= htmlspecialchars($empleado['puesto'] ?? '—') ?></div>
+                </div>
+            </div>
+
+            <?php if (!empty($empleado['especialidad'])): ?>
+            <div class="info-row">
+                <div class="info-row-icon icon-morado"><i class="fas fa-star"></i></div>
+                <div class="info-row-content">
+                    <div class="info-row-label">Especialidad</div>
+                    <div class="info-row-valor"><?= htmlspecialchars($empleado['especialidad']) ?></div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!empty($empleado['fecha_ingreso'])): ?>
+            <div class="info-row">
+                <div class="info-row-icon icon-gris"><i class="fas fa-calendar-check"></i></div>
+                <div class="info-row-content">
+                    <div class="info-row-label">Fecha de ingreso</div>
+                    <div class="info-row-valor"><?= date('d / m / Y', strtotime($empleado['fecha_ingreso'])) ?></div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <div class="info-row">
+                <div class="info-row-icon icon-verde"><i class="fas fa-circle-check"></i></div>
+                <div class="info-row-content">
+                    <div class="info-row-label">Estatus</div>
+                    <div class="info-row-valor">
+                        <span class="badge-activo-lg">Activo</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-row-icon icon-azul"><i class="fas fa-building"></i></div>
+                <div class="info-row-content">
+                    <div class="info-row-label">Compañía</div>
+                    <div class="info-row-valor link">Fuel Injection Auto Master</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+    </div><!-- /pagina -->
+</main><!-- /contenido -->
+
 <script>
-function toggleOjo(btn) {
-    const input = btn.closest('.input-ojo').querySelector('input');
-    const icon  = btn.querySelector('i');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.replace('fa-eye-slash', 'fa-eye');
-    }
+function toggleSubmenu(id) {
+    const submenu = document.getElementById('submenu-' + id);
+    const toggle  = submenu.previousElementSibling;
+    submenu.classList.toggle('open');
+    toggle.classList.toggle('open');
 }
 </script>
+</body>
+</html>

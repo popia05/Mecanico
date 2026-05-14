@@ -1,246 +1,259 @@
 <?php
+session_start();
 require_once '../../php/db_conexion.php';
+
+$page_title = 'Panel - Auto Master';
+
+// ── Datos del empleado ──
+$id_empleado = $_SESSION['id_empleado'];
+
+$stmt = $conexion->prepare("SELECT * FROM empleados WHERE id_empleado = ?");
+$stmt->execute([$id_empleado]);
+$empleado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$nombre_completo = htmlspecialchars($empleado['nombre'] . ' ' . $empleado['apellido']);
+$iniciales       = strtoupper(substr($empleado['nombre'], 0, 1) . substr($empleado['apellido'], 0, 1));
+$puesto          = htmlspecialchars($empleado['puesto'] ?? 'Mecánico');
+$correo          = htmlspecialchars($empleado['correo']);
+$telefono        = htmlspecialchars($empleado['telefono'] ?? '—');
+$foto            = $empleado['foto'] ?? null;
+
+// ── Contadores ──
+$stmt = $conexion->prepare("SELECT COUNT(*) FROM ordenes WHERE id_mecanico = ? AND estado = 'En Progreso'");
+$stmt->execute([$id_empleado]);
+$activas = $stmt->fetchColumn();
+
+$stmt = $conexion->prepare("SELECT COUNT(*) FROM ordenes WHERE id_mecanico = ? AND estado = 'Terminado'");
+$stmt->execute([$id_empleado]);
+$completadas = $stmt->fetchColumn();
+
+$stmt = $conexion->prepare("SELECT COUNT(*) FROM ordenes WHERE id_mecanico = ? AND estado = 'Pendiente'");
+$stmt->execute([$id_empleado]);
+$pendientes = $stmt->fetchColumn();
+
+$stmt = $conexion->prepare("SELECT COUNT(*) FROM inventario WHERE id_mecanico = ?");
+$stmt->execute([$id_empleado]);
+$herramientas = $stmt->fetchColumn();
+
+// ── Actividad reciente ──
+$stmt = $conexion->prepare("
+    SELECT vehiculo, cliente, servicio, estado, fecha_creacion
+    FROM ordenes
+    WHERE id_mecanico = ?
+    ORDER BY fecha_creacion DESC
+    LIMIT 8
+");
+$stmt->execute([$id_empleado]);
+$actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+function badgeInfo($estado) {
+    return match($estado) {
+        'Pendiente'   => ['clase' => 'badge-pendiente',  'icono' => 'fas fa-car'],
+        'En Progreso' => ['clase' => 'badge-proceso',    'icono' => 'fas fa-car-side'],
+        'Terminado'   => ['clase' => 'badge-completado', 'icono' => 'fas fa-check-circle'],
+        default       => ['clase' => 'badge-pendiente',  'icono' => 'fas fa-car'],
+    };
+}
+
+include 'header.php';
 ?>
 
 <style>
-.panel-bienvenida {
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    color: #fff;
-    padding: 28px 32px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-.panel-bienvenida h2 { margin: 0 0 6px 0; font-size: 24px; color: #fff; }
-.panel-bienvenida p { margin: 0; opacity: 0.85; font-size: 14px; }
-.panel-fecha {
-    background: rgba(255,255,255,0.12);
-    padding: 10px 18px;
-    border-radius: 30px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-}
+    .tarjetas-resumen { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; }
+    .tarjeta-resumen { background: var(--card-bg); border-radius: var(--radius); padding: 22px 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); transition: transform 0.18s, box-shadow 0.18s; }
+    .tarjeta-resumen:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(30,34,60,0.13); }
+    .tarjeta-icono { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .tarjeta-icono.azul    { background: #eff6ff; color: #3b82f6; }
+    .tarjeta-icono.verde   { background: #f0fdf4; color: #22c55e; }
+    .tarjeta-icono.naranja { background: #fffbeb; color: #f59e0b; }
+    .tarjeta-icono.rosa    { background: #fdf2f8; color: #e84393; }
+    .tarjeta-info h3 { font-size: 26px; font-weight: 700; }
+    .tarjeta-info span { font-size: 12.5px; color: #64748b; margin-top: 2px; display: block; }
 
-.panel-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 30px;
-}
-.panel-stat {
-    background: #fff;
-    padding: 18px 20px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-.panel-stat-icono {
-    width: 48px; height: 48px;
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 20px;
-    flex-shrink: 0;
-}
-.panel-stat-icono.rojo { background: #dc2626; }
-.panel-stat-icono.azul { background: #3b82f6; }
-.panel-stat-icono.verde { background: #16a34a; }
-.panel-stat h3 { margin: 0; font-size: 26px; color: #1f2937; line-height: 1; }
-.panel-stat span { color: #64748b; font-size: 13px; display: block; margin-top: 4px; }
+    .grid-principal { display: grid; grid-template-columns: 1fr 1.8fr; gap: 24px; margin-bottom: 28px; }
 
-.panel-titulo {
-    font-size: 18px; color: #1f2937;
-    margin: 0 0 16px 0; font-weight: 600;
-}
+    /* Perfil */
+    .card-perfil { display: flex; flex-direction: column; align-items: center; padding: 32px 24px 24px; text-align: center; }
+    .perfil-avatar { width: 90px; height: 90px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 36px; font-weight: 700; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(232,67,147,0.30); overflow: hidden; }
+    .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .perfil-nombre { font-size: 17px; font-weight: 700; color: var(--accent); }
+    .perfil-rol { font-size: 12.5px; color: #64748b; margin-top: 4px; }
+    .perfil-info { width: 100%; margin-top: 24px; display: flex; flex-direction: column; gap: 0; }
+    .info-fila { display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .info-fila:last-child { border-bottom: none; }
+    .info-label { display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 12.5px; }
+    .info-label i { color: #94a3b8; width: 16px; text-align: center; }
+    .info-valor { font-weight: 500; font-size: 12.5px; color: #1e2238; text-align: right; }
+    .info-valor.link { color: var(--accent2); }
 
-.panel-acceso-grande {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 18px;
-    margin-bottom: 30px;
-}
-.panel-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 22px;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    gap: 16px;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-.panel-card:hover {
-    transform: translateY(-3px);
-    border-color: #dc2626;
-    box-shadow: 0 8px 20px rgba(220,38,38,0.12);
-}
-.panel-card-icono {
-    width: 56px; height: 56px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #dc2626, #991b1b);
-    color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-    flex-shrink: 0;
-}
-.panel-card-cont { flex: 1; }
-.panel-card-cont h3 { margin: 0 0 6px 0; font-size: 17px; color: #1f2937; }
-.panel-card-cont p { margin: 0 0 10px 0; font-size: 13px; color: #64748b; line-height: 1.5; }
-.panel-card-link { color: #dc2626; font-weight: 600; font-size: 13px; }
+    /* Actividad */
+    .actividad-lista { display: flex; flex-direction: column; max-height: 430px; overflow-y: auto; }
+    .actividad-lista::-webkit-scrollbar { width: 5px; }
+    .actividad-lista::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .actividad-item { display: flex; gap: 14px; padding: 16px 22px; border-bottom: 1px solid var(--border); align-items: flex-start; transition: background 0.15s; }
+    .actividad-item:last-child { border-bottom: none; }
+    .actividad-item:hover { background: #f8faff; }
+    .actividad-icono { width: 36px; height: 36px; border-radius: 10px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: var(--accent2); font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+    .actividad-body { flex: 1; min-width: 0; }
+    .actividad-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; gap: 8px; }
+    .actividad-titulo { font-size: 13.5px; font-weight: 600; }
+    .actividad-fecha { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+    .actividad-desc { font-size: 12.5px; color: #64748b; line-height: 1.5; }
+    .sin-actividad { padding: 40px; text-align: center; color: #94a3b8; font-size: 13px; }
+    .sin-actividad i { font-size: 32px; margin-bottom: 10px; display: block; color: #cbd5e1; }
 
-.panel-acceso-mini {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px;
-}
-.panel-card-mini {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: inherit;
-    transition: background 0.2s, border-color 0.2s;
-}
-.panel-card-mini:hover {
-    background: #fef2f2;
-    border-color: #dc2626;
-}
-.panel-card-mini-icono {
-    width: 40px; height: 40px;
-    background: #f3f4f6;
-    color: #dc2626;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-}
-.panel-card-mini h4 { margin: 0 0 2px 0; font-size: 14px; color: #1f2937; }
-.panel-card-mini span { font-size: 12px; color: #64748b; }
+    /* Accesos rápidos */
+    .accesos-rapidos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .acceso-rapido { background: var(--card-bg); border-radius: var(--radius); padding: 22px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; color: #1e2238; border: 1px solid var(--border); box-shadow: var(--shadow); transition: all 0.18s; font-size: 13px; font-weight: 500; text-align: center; }
+    .acceso-rapido i { font-size: 22px; color: var(--accent2); }
+    .acceso-rapido:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 28px rgba(232,67,147,0.13); color: var(--accent); }
+    .acceso-rapido:hover i { color: var(--accent); }
+
+    @media (max-width: 1100px) {
+        .tarjetas-resumen { grid-template-columns: repeat(2, 1fr); }
+        .grid-principal { grid-template-columns: 1fr; }
+        .accesos-rapidos { grid-template-columns: repeat(2, 1fr); }
+    }
 </style>
 
-<div class="panel-bienvenida">
-    <div>
-        <h2>Bienvenido, <?= $nombreEmpleado ?></h2>
-        <p>Aqui esta el resumen de tu jornada de hoy</p>
+<!-- Título -->
+<div class="pagina-titulo">
+    <h2>Bienvenido al Panel</h2>
+    <p>Sistema de gestión - Fuel Injection Auto Master</p>
+</div>
+
+<!-- Tarjetas resumen -->
+<div class="tarjetas-resumen">
+    <div class="tarjeta-resumen">
+        <div class="tarjeta-icono azul"><i class="fas fa-car"></i></div>
+        <div class="tarjeta-info"><h3><?= $activas ?></h3><span>Órdenes Activas</span></div>
     </div>
-    <div class="panel-fecha">
-        <i class="fas fa-calendar-alt"></i>
-        <span id="fecha-actual"></span>
+    <div class="tarjeta-resumen">
+        <div class="tarjeta-icono verde"><i class="fas fa-check-circle"></i></div>
+        <div class="tarjeta-info"><h3><?= $completadas ?></h3><span>Completadas</span></div>
+    </div>
+    <div class="tarjeta-resumen">
+        <div class="tarjeta-icono naranja"><i class="fas fa-clock"></i></div>
+        <div class="tarjeta-info"><h3><?= $pendientes ?></h3><span>Pendientes</span></div>
+    </div>
+    <div class="tarjeta-resumen">
+        <div class="tarjeta-icono rosa"><i class="fas fa-tools"></i></div>
+        <div class="tarjeta-info"><h3><?= $herramientas ?></h3><span>Mis Herramientas</span></div>
     </div>
 </div>
 
-<div class="panel-stats">
-    <div class="panel-stat">
-        <div class="panel-stat-icono rojo"><i class="fas fa-clock"></i></div>
-        <div>
-            <h3 id="stat-pendientes"><?= $pendientes ?></h3>
-            <span>Tareas Pendientes</span>
+<!-- Grid perfil + actividad -->
+<div class="grid-principal">
+
+    <!-- Perfil -->
+    <div class="card">
+        <div class="card-perfil">
+            <div class="perfil-avatar">
+                <?php if ($foto): ?>
+                    <img src="../../uploads/<?= htmlspecialchars($foto) ?>" alt="foto">
+                <?php else: ?>
+                    <?= $iniciales ?>
+                <?php endif; ?>
+            </div>
+            <div class="perfil-nombre"><?= $nombre_completo ?></div>
+            <div class="perfil-rol"><?= $puesto ?></div>
+
+            <div class="perfil-info">
+                <div class="info-fila">
+                    <span class="info-label"><i class="fas fa-circle-dot"></i> Estatus</span>
+                    <span class="badge badge-activo">Activo</span>
+                </div>
+                <div class="info-fila">
+                    <span class="info-label"><i class="fas fa-building"></i> Compañía</span>
+                    <span class="info-valor link">Auto Master</span>
+                </div>
+                <div class="info-fila">
+                    <span class="info-label"><i class="fas fa-phone"></i> Teléfono</span>
+                    <span class="info-valor"><?= $telefono ?></span>
+                </div>
+                <div class="info-fila">
+                    <span class="info-label"><i class="fas fa-envelope"></i> Email</span>
+                    <span class="info-valor link"><?= $correo ?></span>
+                </div>
+                <?php if (!empty($empleado['especialidad'])): ?>
+                <div class="info-fila">
+                    <span class="info-label"><i class="fas fa-star"></i> Especialidad</span>
+                    <span class="info-valor"><?= htmlspecialchars($empleado['especialidad']) ?></span>
+                </div>
+                <?php endif; ?>
+                <?php if (!empty($empleado['fecha_ingreso'])): ?>
+                <div class="info-fila">
+                    <span class="info-label"><i class="fas fa-calendar"></i> Ingreso</span>
+                    <span class="info-valor"><?= date('d/m/Y', strtotime($empleado['fecha_ingreso'])) ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
-    <div class="panel-stat">
-        <div class="panel-stat-icono azul"><i class="fas fa-tools"></i></div>
-        <div>
-            <h3 id="stat-progreso"><?= $enProgreso ?></h3>
-            <span>En Progreso</span>
+
+    <!-- Actividad -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-bolt"></i> Actividad
+        </div>
+        <div class="actividad-lista">
+            <?php if (empty($actividades)): ?>
+                <div class="sin-actividad">
+                    <i class="fas fa-inbox"></i>
+                    Sin órdenes asignadas aún.
+                </div>
+            <?php else: ?>
+                <?php foreach ($actividades as $item):
+                    $info  = badgeInfo($item['estado']);
+                    $fecha = date('H:i - M d, Y', strtotime($item['fecha_creacion']));
+                ?>
+                <div class="actividad-item">
+                    <div class="actividad-icono"><i class="<?= $info['icono'] ?>"></i></div>
+                    <div class="actividad-body">
+                        <div class="actividad-top">
+                            <div>
+                                <div class="actividad-titulo"><?= htmlspecialchars($item['vehiculo']) ?></div>
+                                <div class="actividad-fecha"><?= $fecha ?> &mdash; <?= htmlspecialchars($item['cliente']) ?></div>
+                            </div>
+                            <span class="badge <?= $info['clase'] ?>"><?= htmlspecialchars($item['estado']) ?></span>
+                        </div>
+                        <div class="actividad-desc"><?= htmlspecialchars($item['servicio']) ?></div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
-    <div class="panel-stat">
-        <div class="panel-stat-icono verde"><i class="fas fa-check-circle"></i></div>
-        <div>
-            <h3 id="stat-terminadas"><?= $terminadas ?></h3>
-            <span>Terminadas</span>
-        </div>
-    </div>
+
 </div>
 
-<h3 class="panel-titulo">Accesos Rapidos</h3>
-
-<div class="panel-acceso-grande">
-    <a href="index.php?p=ordenes" class="panel-card">
-        <div class="panel-card-icono"><i class="fas fa-clipboard-list"></i></div>
-        <div class="panel-card-cont">
-            <h3>Tareas Asignadas</h3>
-            <p>Revisa las ordenes que el administrador te asigno y actualiza su estado</p>
-            <span class="panel-card-link">Ver tareas <i class="fas fa-arrow-right"></i></span>
-        </div>
+<!-- Accesos rápidos -->
+<div class="seccion-titulo">Accesos Rápidos</div>
+<div class="accesos-rapidos">
+    <a href="tareas-asignadas.php" class="acceso-rapido">
+        <i class="fas fa-list-check"></i><span>Mis Tareas</span>
     </a>
-    <a href="index.php?p=gestion" class="panel-card">
-        <div class="panel-card-icono"><i class="fas fa-clipboard"></i></div>
-        <div class="panel-card-cont">
-            <h3>Gestión de Ordenes</h3>
-            <p>Vista general de todas tus ordenes de trabajo en un solo lugar</p>
-            <span class="panel-card-link">Ver ordenes <i class="fas fa-arrow-right"></i></span>
-        </div>
+    <a href="Gestion.php" class="acceso-rapido">
+        <i class="fas fa-clipboard-list"></i><span>Ver Órdenes</span>
+    </a>
+    <a href="Inventario.php" class="acceso-rapido">
+        <i class="fas fa-boxes"></i><span>Ver Inventario</span>
+    </a>
+    <a href="Nota-remision.php" class="acceso-rapido">
+        <i class="fas fa-file-alt"></i><span>Crear Nota</span>
     </a>
 </div>
 
-<h3 class="panel-titulo">Otras Opciones</h3>
-
-<div class="panel-acceso-mini">
-    <a href="index.php?p=inventario" class="panel-card-mini">
-        <div class="panel-card-mini-icono"><i class="fas fa-wrench"></i></div>
-        <div>
-            <h4>Ver Inventario</h4>
-            <span>Consultar refacciones</span>
-        </div>
-    </a>
-    <a href="index.php?p=nota-remision" class="panel-card-mini">
-        <div class="panel-card-mini-icono"><i class="fas fa-file-invoice"></i></div>
-        <div>
-            <h4>Nota De Remision</h4>
-            <span>Generar notas de tareas</span>
-        </div>
-    </a>
-    <a href="index.php?p=perfil" class="panel-card-mini">
-        <div class="panel-card-mini-icono"><i class="fas fa-user"></i></div>
-        <div>
-            <h4>Mi Perfil</h4>
-            <span>Ver mi informacion</span>
-        </div>
-    </a>
-</div>
+    </div><!-- /pagina -->
+</main><!-- /contenido -->
 
 <script>
-const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const dias = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
-const hoy = new Date();
-document.getElementById('fecha-actual').textContent =
-    `${dias[hoy.getDay()]}, ${hoy.getDate()} de ${meses[hoy.getMonth()]}`;
-
-function actualizarContadores() {
-    const tareas = [
-        {id:1, estadoInicial:'Pendiente'},
-        {id:2, estadoInicial:'En Progreso'},
-        {id:3, estadoInicial:'Terminado'},
-        {id:4, estadoInicial:'Pendiente'},
-        {id:5, estadoInicial:'En Progreso'},
-        {id:6, estadoInicial:'Terminado'},
-    ];
-    const cambios = JSON.parse(localStorage.getItem('estadosTareas') || '{}');
-    let p = 0, e = 0, t = 0;
-    tareas.forEach(tarea => {
-        const estado = cambios[tarea.id] || tarea.estadoInicial;
-        if (estado === 'Pendiente') p++;
-        else if (estado === 'En Progreso') e++;
-        else if (estado === 'Terminado') t++;
-    });
-    document.getElementById('stat-pendientes').textContent = p;
-    document.getElementById('stat-progreso').textContent = e;
-    document.getElementById('stat-terminadas').textContent = t;
+function toggleSubmenu(id) {
+    const submenu = document.getElementById('submenu-' + id);
+    const toggle  = submenu.previousElementSibling;
+    submenu.classList.toggle('open');
+    toggle.classList.toggle('open');
 }
-actualizarContadores();
 </script>
+</body>
+</html>

@@ -1,165 +1,375 @@
 <?php
+session_start();
 require_once '../../php/db_conexion.php';
 
-$mensaje = '';
-$tipo_mensaje = '';
+$page_title  = 'Nota de Remisión - Auto Master';
+$id_empleado = $_SESSION['id_empleado'];
 
-// Guardar nota de remisión
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_nota'])) {
-    $id_orden       = intval($_POST['id_orden'] ?? 0);
-    $id_cliente     = intval($_POST['id_cliente'] ?? 0);
-    $id_servicio    = intval($_POST['id_servicio'] ?? 0) ?: null;
-    $fecha_ingreso  = $_POST['fecha_ingreso'] ?? '';
-    $fecha_salida   = $_POST['fecha_salida'] ?? '';
-    $descripcion    = trim($_POST['descripcion'] ?? '');
-    $costo_total    = floatval($_POST['costo_total'] ?? 0);
-    $garantia       = trim($_POST['garantia'] ?? '');
-    $observaciones  = trim($_POST['observaciones'] ?? '');
+// ── Guardar reparacion_realizada ──
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_servicio'], $_POST['reparacion_realizada'])) {
+    $id_servicio          = (int) $_POST['id_servicio'];
+    $reparacion_realizada = trim($_POST['reparacion_realizada']);
 
-    try {
-        // Actualizar servicio si existe, o insertar
-        if ($id_servicio) {
-            $sql = "UPDATE servicios SET descripcion_falla=:d, reparacion_realizada=:r, costo_total=:c, fecha_ingreso=:fi WHERE id_servicio=:id";
-            $stmt = $conexion->prepare($sql);
-            $stmt->execute([':d'=>$descripcion,':r'=>$observaciones,':c'=>$costo_total,':fi'=>$fecha_ingreso,':id'=>$id_servicio]);
-        } else {
-            // Obtener id_vehiculo y id_empleado de la orden
-            $ord = $conexion->prepare("SELECT id_mecanico FROM ordenes WHERE id_orden=:id");
-            $ord->execute([':id'=>$id_orden]);
-            $orden_data = $ord->fetch(PDO::FETCH_ASSOC);
-            $sql = "INSERT INTO servicios (fecha_ingreso, descripcion_falla, reparacion_realizada, costo_total, id_empleado) VALUES (:fi,:d,:r,:c,:e)";
-            $stmt = $conexion->prepare($sql);
-            $stmt->execute([':fi'=>$fecha_ingreso,':d'=>$descripcion,':r'=>$observaciones,':c'=>$costo_total,':e'=>$orden_data['id_mecanico'] ?? null]);
-        }
-        $mensaje = '¡Nota de remisión guardada!';
-        $tipo_mensaje = 'exito';
-    } catch (PDOException $e) {
-        $mensaje = 'Error: ' . $e->getMessage();
-        $tipo_mensaje = 'error';
+    $check = $conexion->prepare("SELECT id_servicio FROM servicios WHERE id_servicio = ? AND id_empleado = ?");
+    $check->execute([$id_servicio, $id_empleado]);
+
+    if ($check->fetch()) {
+        $stmt = $conexion->prepare("UPDATE servicios SET reparacion_realizada = ? WHERE id_servicio = ?");
+        $stmt->execute([$reparacion_realizada, $id_servicio]);
+        header("Location: Nota-remision.php?id=$id_servicio&msg=guardado");
+        exit();
     }
 }
 
-// Obtener clientes para el select
-$clientes = [];
-try {
-    $stmt = $conexion->query("SELECT id_cliente, nombre, apellido, placa, marca_carro, modelo_carro FROM clientes ORDER BY nombre ASC");
-    $clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) { $clientes = []; }
+// ── Cargar servicio seleccionado ──
+$servicio = null;
 
-// Obtener órdenes con mecánico
-$ordenes = [];
-try {
-    $stmt = $conexion->query("
-        SELECT o.id_orden, o.vehiculo, o.cliente, o.servicio, o.estado, o.fecha_creacion,
-               CONCAT(e.nombre,' ',e.apellido) AS mecanico_nombre
-        FROM ordenes o
-        LEFT JOIN empleados e ON o.id_mecanico = e.id_empleado
+if (isset($_GET['id'])) {
+    $id_servicio = (int) $_GET['id'];
+    // Traer servicio + datos del empleado + la orden más reciente del empleado
+    $stmt = $conexion->prepare("
+        SELECT s.*,
+               e.nombre as emp_nombre,
+               e.apellido as emp_apellido,
+               o.vehiculo,
+               o.cliente,
+               o.estado,
+               o.servicio as tipo_servicio
+        FROM servicios s
+        LEFT JOIN empleados e ON e.id_empleado = s.id_empleado
+        LEFT JOIN ordenes o ON o.id_mecanico = s.id_empleado
+        WHERE s.id_servicio = ? AND s.id_empleado = ?
         ORDER BY o.fecha_creacion DESC
+        LIMIT 1
     ");
-    $ordenes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) { $ordenes = []; }
-
-// Orden seleccionada (si viene por GET)
-$orden_sel = null;
-$cliente_sel = null;
-$servicio_sel = null;
-
-if (isset($_GET['id_orden'])) {
-    $id_ord = intval($_GET['id_orden']);
-    try {
-        $stmt = $conexion->prepare("
-            SELECT o.*, CONCAT(e.nombre,' ',e.apellido) AS mecanico_nombre, e.puesto AS mecanico_puesto
-            FROM ordenes o
-            LEFT JOIN empleados e ON o.id_mecanico = e.id_empleado
-            WHERE o.id_orden = :id
-        ");
-        $stmt->execute([':id' => $id_ord]);
-        $orden_sel = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($orden_sel) {
-            // Buscar cliente por placa (vehiculo contiene la placa o nombre)
-            $stmt2 = $conexion->query("SELECT * FROM clientes LIMIT 1");
-            // intentar match por nombre del cliente en la orden
-            $stmt2 = $conexion->prepare("SELECT * FROM clientes WHERE CONCAT(nombre,' ',apellido) LIKE :c OR placa LIKE :p LIMIT 1");
-            $stmt2->execute([':c' => '%'.$orden_sel['cliente'].'%', ':p' => '%'.$orden_sel['vehiculo'].'%']);
-            $cliente_sel = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-            // Buscar servicio asociado al empleado de esta orden
-            $stmt3 = $conexion->prepare("SELECT * FROM servicios WHERE id_empleado = :e ORDER BY id_servicio DESC LIMIT 1");
-            $stmt3->execute([':e' => $orden_sel['id_mecanico'] ?? 0]);
-            $servicio_sel = $stmt3->fetch(PDO::FETCH_ASSOC);
-        }
-    } catch (PDOException $e) { $orden_sel = null; }
+    $stmt->execute([$id_servicio, $id_empleado]);
+    $servicio = $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
+// ── Lista de servicios del empleado (para el select) ──
+$stmt = $conexion->prepare("
+    SELECT s.id_servicio, s.fecha_ingreso, s.descripcion_falla,
+           s.reparacion_realizada, s.costo_total,
+           e.nombre as emp_nombre, e.apellido as emp_apellido
+    FROM servicios s
+    LEFT JOIN empleados e ON e.id_empleado = s.id_empleado
+    WHERE s.id_empleado = ?
+    ORDER BY s.fecha_ingreso DESC
+");
+$stmt->execute([$id_empleado]);
+$servicios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Nombre del empleado desde sesión como fallback
+$nombre_empleado = ($_SESSION['nombre'] ?? '') . ' ' . ($_SESSION['apellido'] ?? '');
+
+include 'header.php';
 ?>
-<h2 style="text-align:center;margin-bottom:25px;">Notas De Remision</h2>
 
-<div class="seccion" style="background:var(--fondo-claro);">
-    <h3 style="text-align:center;border-bottom:2px solid #6366f1;padding-bottom:15px;margin-bottom:25px;">
-        Tareas Listas Para Remision
-    </h3>
+<style>
+    .selector-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .selector-label { font-size: 13px; font-weight: 600; color: #1e2238; white-space: nowrap; }
+    .selector-select { flex: 1; min-width: 260px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Sora', sans-serif; font-size: 13px; color: #1e2238; background: #f8faff; outline: none; cursor: pointer; transition: border-color 0.18s; }
+    .selector-select:focus { border-color: var(--accent); }
+    .btn-cargar { padding: 10px 22px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: filter 0.18s, transform 0.15s; white-space: nowrap; }
+    .btn-cargar:hover { filter: brightness(0.9); transform: translateY(-1px); }
 
-    <div id="contenedor-remision">
-        <!-- JS llena esto dinamicamente -->
-    </div>
+    .nota-grid { display: grid; grid-template-columns: 1fr 280px; gap: 24px; align-items: start; }
 
-    <div id="sin-tareas" style="display:none;text-align:center;padding:40px;color:var(--texto-claro);">
-        <i class="fas fa-clipboard-check" style="font-size:48px;margin-bottom:15px;opacity:0.4;"></i>
-        <p>No hay tareas terminadas pendientes de remision.</p>
-        <p style="font-size:13px;margin-top:8px;">Termina una tarea en <strong>Tareas Asignadas</strong> o <strong>Gestion de Ordenes</strong> y aparecera aqui.</p>
-    </div>
+    .nota-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+
+    .nota-empresa { padding: 20px 28px; border-bottom: 2px solid var(--accent); display: flex; align-items: center; justify-content: space-between; gap: 16px; background: linear-gradient(135deg, #1e2238, #2d3158); }
+    .empresa-info h3 { color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 3px; }
+    .empresa-info p  { color: #8b92a9; font-size: 12px; line-height: 1.5; }
+    .empresa-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; flex-shrink: 0; }
+
+    .nota-titulo { text-align: center; padding: 14px; font-size: 12px; font-weight: 700; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--border); background: #f8faff; }
+
+    .nota-campos { padding: 20px 28px; display: flex; flex-direction: column; gap: 0; }
+
+    .campo-grupo { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .campo-grupo:last-child { border-bottom: none; }
+
+    .campo-icono { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+    .ci-azul    { background: #eff6ff; color: #3b82f6; }
+    .ci-rosa    { background: #fdf2f8; color: var(--accent); }
+    .ci-verde   { background: #f0fdf4; color: #22c55e; }
+    .ci-naranja { background: #fffbeb; color: #f59e0b; }
+    .ci-morado  { background: #f5f3ff; color: #7c3aed; }
+    .ci-gris    { background: #f1f5f9; color: #64748b; }
+
+    .campo-content { flex: 1; }
+    .campo-label { font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+    .campo-valor { font-size: 13.5px; font-weight: 600; color: #1e2238; }
+    .campo-valor.muted { font-weight: 400; color: #64748b; }
+
+    .campo-editable-wrapper { flex: 1; }
+    .campo-editable-label { font-size: 10.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .editable-badge { background: #fdf2f8; color: var(--accent); font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+
+    .campo-textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--accent); border-radius: 10px; font-family: 'Sora', sans-serif; font-size: 13px; color: #1e2238; background: #fff9fb; resize: vertical; min-height: 100px; outline: none; transition: border-color 0.18s, box-shadow 0.18s; line-height: 1.6; }
+    .campo-textarea:focus { box-shadow: 0 0 0 3px rgba(229,57,53,0.10); }
+    .campo-textarea::placeholder { color: #94a3b8; font-style: italic; }
+
+    .campos-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border); }
+    .campos-fila .campo-grupo { border-bottom: none; border-right: 1px solid var(--border); }
+    .campos-fila .campo-grupo:last-child { border-right: none; }
+
+    .nota-footer { padding: 16px 28px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; gap: 12px; background: #f8faff; }
+    .btn-cancelar { padding: 10px 20px; background: transparent; color: #64748b; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; transition: all 0.18s; }
+    .btn-cancelar:hover { border-color: #94a3b8; color: #1e2238; }
+    .btn-guardar { padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: filter 0.18s, transform 0.15s; box-shadow: 0 4px 14px rgba(229,57,53,0.25); }
+    .btn-guardar:hover { filter: brightness(0.9); transform: translateY(-1px); }
+
+    .estado-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+    .estado-card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+    .estado-lista { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+    .estado-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .estado-item-label { font-size: 13px; color: #64748b; }
+    .estado-check  { color: #22c55e; font-size: 15px; }
+    .estado-pencil { color: var(--accent); font-size: 14px; }
+    .estado-pending{ color: #94a3b8; font-size: 14px; }
+
+    .total-card { background: var(--accent); border-radius: var(--radius); padding: 24px 20px; text-align: center; margin-top: 16px; }
+    .total-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.70); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .total-monto { font-size: 36px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .total-fecha  { font-size: 11.5px; color: rgba(255,255,255,0.60); margin-bottom: 0; }
+
+    .nota-vacia { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 80px 40px; text-align: center; color: #94a3b8; grid-column: 1 / -1; }
+    .nota-vacia i  { font-size: 52px; color: #e2e8f0; margin-bottom: 16px; display: block; }
+    .nota-vacia h3 { font-size: 16px; color: #64748b; margin-bottom: 6px; }
+
+    .toast { position: fixed; bottom: 28px; right: 28px; background: #22c55e; color: #fff; padding: 14px 20px; border-radius: 12px; font-size: 13.5px; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 28px rgba(30,34,60,0.20); z-index: 999; transform: translateY(80px); opacity: 0; transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 900px) {
+        .nota-grid    { grid-template-columns: 1fr; }
+        .campos-fila  { grid-template-columns: 1fr; }
+        .campos-fila .campo-grupo { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+</style>
+
+<div class="pagina-titulo">
+    <h2><i class="fas fa-file-invoice"></i> Nota de Remisión</h2>
+    <p>Selecciona un servicio para agregar los comentarios de reparación.</p>
 </div>
 
-<script>
-// Lista maestra de TODAS las tareas del sistema (debe coincidir con ordenes.php y gestion.php)
-const todasLasTareas = [
-    {id:1,veh:'Dodge Atitud 2020',hora:'14:00 - Mar 03, 2026',desc:'Viene a un servicio completo: cambio de bujias, cambio de aceite, cambio de filtros (aceite y aire), tambien escanear el sistema del carro para ver errores.',estadoInicial:'Pendiente'},
-    {id:2,veh:'Nissan Altima 2019',hora:'14:30 - Mar 02, 2026',desc:'Cambio de amortiguadores a carro Nissan Altima, motor 4 cilindros.',estadoInicial:'En Progreso'},
-    {id:3,veh:'Nissan Altima 2018',hora:'14:00 - Mar 01, 2026',desc:'Se realizo cambio de llantas a carro Nissan Altima, motor 4 cilindros.',estadoInicial:'Terminado'},
-    {id:4,veh:'Toyota Corolla 2021',hora:'10:00 - Mar 03, 2026',desc:'Servicio de mantenimiento a carro Toyota Corolla. Cambio de aceite y revision general.',estadoInicial:'Pendiente'},
-    {id:5,veh:'Ford F-150 2022',hora:'09:00 - Feb 28, 2026',desc:'Cambio de balatas delanteras y traseras. Revision de discos de freno.',estadoInicial:'En Progreso'},
-    {id:6,veh:'Chevrolet Spark 2020',hora:'11:30 - Feb 27, 2026',desc:'Diagnostico de falla en sistema electrico. El carro no enciende correctamente.',estadoInicial:'Terminado'},
-];
+<!-- Selector -->
+<form method="GET" action="Nota-remision.php" class="selector-card">
+    <span class="selector-label">Seleccionar Servicio</span>
+    <select name="id" class="selector-select">
+        <option value="">— Elige un servicio —</option>
+        <?php foreach ($servicios as $s): ?>
+        <option value="<?= $s['id_servicio'] ?>"
+            <?= (isset($_GET['id']) && (int)$_GET['id'] === (int)$s['id_servicio']) ? 'selected' : '' ?>>
+            #<?= $s['id_servicio'] ?> —
+            <?= htmlspecialchars($s['descripcion_falla'] ?? 'Sin descripción') ?> |
+            <?= htmlspecialchars($s['fecha_ingreso']) ?>
+        </option>
+        <?php endforeach; ?>
+    </select>
+    <button type="submit" class="btn-cargar">
+        <i class="fas fa-arrow-right"></i> Cargar
+    </button>
+</form>
 
-function renderRemisiones() {
-    const cambios = JSON.parse(localStorage.getItem('estadosTareas') || '{}');
-    const remisionesHechas = JSON.parse(localStorage.getItem('remisionesHechas') || '[]');
+<!-- Contenido -->
+<div class="nota-grid">
 
-    // Filtrar tareas que estan terminadas Y que no tienen remision hecha
-    const terminadas = todasLasTareas.filter(t => {
-        const estadoActual = cambios[t.id] || t.estadoInicial;
-        return estadoActual === 'Terminado' && !remisionesHechas.includes(t.id);
-    });
+<?php if (!$servicio): ?>
+    <div class="nota-vacia">
+        <i class="fas fa-file-circle-question"></i>
+        <h3>Ningún servicio seleccionado</h3>
+        <p>Elige un servicio del selector de arriba y haz clic en "Cargar".</p>
+    </div>
 
-    const cont = document.getElementById('contenedor-remision');
-    const vacio = document.getElementById('sin-tareas');
+<?php else:
+    // Datos con fallback seguros
+    $cliente     = $servicio['cliente']       ?? '—';
+    $vehiculo    = $servicio['vehiculo']       ?? '—';
+    $estado      = $servicio['estado']         ?? '—';
+    $mecanico    = !empty($servicio['emp_nombre'])
+                    ? $servicio['emp_nombre'] . ' ' . $servicio['emp_apellido']
+                    : $nombre_empleado;
+?>
 
-    if (terminadas.length === 0) {
-        cont.innerHTML = '';
-        vacio.style.display = 'block';
-        return;
-    }
+    <!-- Nota principal -->
+    <form method="POST">
+        <input type="hidden" name="id_servicio" value="<?= $servicio['id_servicio'] ?>">
 
-    vacio.style.display = 'none';
-    cont.innerHTML = terminadas.map(t => `
-        <div class="tarea-lista">
-            <div class="tarea-icono-redondo"><i class="fas fa-tools"></i></div>
-            <div class="tarea-lista-contenido">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <strong>${t.veh}</strong>
-                    <span class="badge badge-verde">Terminado</span>
+        <div class="nota-card">
+
+            <div class="nota-empresa">
+                <div class="empresa-info">
+                    <h3>Auto Master</h3>
+                    <p>Fuel Injection · Agua Prieta, Sonora, MX<br>
+                       Folio #<?= str_pad($servicio['id_servicio'], 4, '0', STR_PAD_LEFT) ?></p>
                 </div>
-                <span class="texto-claro" style="display:block;margin-bottom:10px;">${t.hora}</span>
-                <div class="caja-mensaje" style="margin-bottom:10px;">${t.desc}</div>
-                <div style="text-align:right;">
-                    <a href="index.php?p=nota-detalle&id=${t.id}" class="btn btn-rojo">
-                        <i class="fas fa-file-invoice"></i> Agregar Nota
-                    </a>
+                <div class="empresa-logo"><i class="fas fa-wrench"></i></div>
+            </div>
+
+            <div class="nota-titulo">Nota de Remisión de Servicio</div>
+
+            <div class="nota-campos">
+
+                <!-- Cliente -->
+                <div class="campo-grupo">
+                    <div class="campo-icono ci-azul"><i class="fas fa-user"></i></div>
+                    <div class="campo-content">
+                        <div class="campo-label">Cliente</div>
+                        <div class="campo-valor"><?= htmlspecialchars($cliente) ?></div>
+                    </div>
+                </div>
+
+                <!-- Vehículo -->
+                <div class="campo-grupo">
+                    <div class="campo-icono ci-naranja"><i class="fas fa-car"></i></div>
+                    <div class="campo-content">
+                        <div class="campo-label">Vehículo · Placas</div>
+                        <div class="campo-valor"><?= htmlspecialchars($vehiculo) ?></div>
+                    </div>
+                </div>
+
+                <!-- Mecánico -->
+                <div class="campo-grupo">
+                    <div class="campo-icono ci-rosa"><i class="fas fa-user-gear"></i></div>
+                    <div class="campo-content">
+                        <div class="campo-label">Asignación de Personal</div>
+                        <div class="campo-valor"><?= htmlspecialchars($mecanico) ?></div>
+                    </div>
+                </div>
+
+                <!-- Descripción falla (solo lectura) -->
+                <div class="campo-grupo">
+                    <div class="campo-icono ci-gris"><i class="fas fa-triangle-exclamation"></i></div>
+                    <div class="campo-content">
+                        <div class="campo-label">Descripción de la Falla</div>
+                        <div class="campo-valor muted"><?= htmlspecialchars($servicio['descripcion_falla'] ?? '—') ?></div>
+                    </div>
+                </div>
+
+                <!-- Reparación realizada — EDITABLE -->
+                <div class="campo-grupo">
+                    <div class="campo-icono ci-rosa"><i class="fas fa-pen-to-square"></i></div>
+                    <div class="campo-editable-wrapper">
+                        <div class="campo-editable-label">
+                            <i class="fas fa-pen"></i>
+                            Reparación Realizada
+                            <span class="editable-badge">Editable</span>
+                        </div>
+                        <textarea
+                            name="reparacion_realizada"
+                            class="campo-textarea"
+                            placeholder="Describe el trabajo realizado, piezas cambiadas, ajustes hechos..."
+                            required
+                        ><?= htmlspecialchars($servicio['reparacion_realizada'] ?? '') ?></textarea>
+                    </div>
+                </div>
+
+                <!-- Fechas -->
+                <div class="campos-fila">
+                    <div class="campo-grupo">
+                        <div class="campo-icono ci-verde"><i class="fas fa-calendar-check"></i></div>
+                        <div class="campo-content">
+                            <div class="campo-label">Fecha de Ingreso</div>
+                            <div class="campo-valor"><?= date('d/m/Y', strtotime($servicio['fecha_ingreso'])) ?></div>
+                        </div>
+                    </div>
+                    <div class="campo-grupo">
+                        <div class="campo-icono ci-morado"><i class="fas fa-calendar-xmark"></i></div>
+                        <div class="campo-content">
+                            <div class="campo-label">Fecha de Salida</div>
+                            <div class="campo-valor muted">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Costo y garantía -->
+                <div class="campos-fila">
+                    <div class="campo-grupo">
+                        <div class="campo-icono ci-verde"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="campo-content">
+                            <div class="campo-label">Costo Total</div>
+                            <div class="campo-valor">$<?= number_format($servicio['costo_total'] ?? 0, 2) ?></div>
+                        </div>
+                    </div>
+                    <div class="campo-grupo">
+                        <div class="campo-icono ci-azul"><i class="fas fa-shield-halved"></i></div>
+                        <div class="campo-content">
+                            <div class="campo-label">Garantía</div>
+                            <div class="campo-valor muted">30 días en mano de obra</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="nota-footer">
+                <a href="Nota-remision.php" class="btn-cancelar">Cancelar</a>
+                <button type="submit" class="btn-guardar">
+                    <i class="fas fa-floppy-disk"></i> Guardar nota
+                </button>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- Panel lateral -->
+    <div>
+        <div class="estado-card">
+            <div class="estado-card-header">Estado de la Orden</div>
+            <div class="estado-lista">
+                <div class="estado-item">
+                    <span class="estado-item-label">Vehículo registrado</span>
+                    <i class="fas <?= $vehiculo !== '—' ? 'fa-check estado-check' : 'fa-clock estado-pending' ?>"></i>
+                </div>
+                <div class="estado-item">
+                    <span class="estado-item-label">Mecánico asignado</span>
+                    <i class="fas fa-check estado-check"></i>
+                </div>
+                <div class="estado-item">
+                    <span class="estado-item-label">Descripción del servicio</span>
+                    <i class="fas <?= !empty($servicio['reparacion_realizada']) ? 'fa-check estado-check' : 'fa-pen estado-pencil' ?>"></i>
+                </div>
+                <div class="estado-item">
+                    <span class="estado-item-label">Estado: <strong><?= htmlspecialchars($estado) ?></strong></span>
+                    <i class="fas <?= $estado === 'Terminado' ? 'fa-check estado-check' : 'fa-clock estado-pending' ?>"></i>
                 </div>
             </div>
         </div>
-    `).join('');
-}
 
-document.addEventListener('DOMContentLoaded', renderRemisiones);
+        <div class="total-card">
+            <div class="total-label">Total</div>
+            <div class="total-monto">$<?= number_format($servicio['costo_total'] ?? 0, 2) ?></div>
+            <div class="total-fecha"><?= date('d/m/Y', strtotime($servicio['fecha_ingreso'])) ?></div>
+        </div>
+    </div>
+
+<?php endif; ?>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i> Reparación guardada correctamente
+</div>
+
+    </div>
+</main>
+
+<script>
+function toggleSubmenu(id) {
+    const submenu = document.getElementById('submenu-' + id);
+    const toggle  = submenu.previousElementSibling;
+    submenu.classList.toggle('open');
+    toggle.classList.toggle('open');
+}
+<?php if (isset($_GET['msg']) && $_GET['msg'] === 'guardado'): ?>
+window.addEventListener('DOMContentLoaded', () => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+});
+<?php endif; ?>
 </script>
+</body>
+</html>
