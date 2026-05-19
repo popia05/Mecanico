@@ -42,3 +42,12 @@ de aqui para abajo voy a ir viendo bien de como agregarla informacion de los cli
 -Se agrego un identificador de usuarios en login inicio de sesion pero sin tabla usuarios en bd no funciona
 -se agrego codigo a carpetas de includes e index
 todo lo relacionado a los cambios son para conectar el admin con el empleado (y viceversa) mediante la bd
+
+==LUNES 18 DE MAYO==
+-Eliminacion de archivo "informacion.php" que tenia datos del admin pero ese archivo ya esta en "informacion-admin.php"
+-Activacion de boton "Editar" en datos del administrador y boton agregado de "Guardar cambios" junto con un mensaje de 
+"Cambios guardados exitosamente", eso ya esta conectado a la base de datos.
+-En el respaldo se elimino el boton "Parcial y configuracion" ya que el respaldo sebe ser completo 
+(EN EL MENSAJE SUPERIOR AUN NO MUESTRA LA ULTIMA FECHA ACTUALIZADA DEL ULTIMO RESPALDO ACTUALIZADO NI EN EL HISTORIAL DE RESPALDOS)
+-Eliminacion de informacion codeada en los mensajes de tareas asignadas, eso debe actualizarse solo segun el funcionamiento.
+tambien tiene informacion codeada en Tareas Actuales, eso debe tener datos reales.

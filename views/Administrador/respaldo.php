@@ -397,12 +397,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="button" class="btn-tipo activo" data-tipo="Completo" onclick="selTipo(this)">
                             <i class="fas fa-file"></i> Completo
                         </button>
-                        <button type="button" class="btn-tipo" data-tipo="Parcial" onclick="selTipo(this)">
-                            <i class="fas fa-folder"></i> Parcial
-                        </button>
-                        <button type="button" class="btn-tipo" data-tipo="Configuración" onclick="selTipo(this)">
-                            <i class="fas fa-gear"></i> Configuración
-                        </button>
+                        
                     </div>
 
                     <button type="submit" class="btn-crear" id="btn-crear" onclick="iniciarCarga(this)">

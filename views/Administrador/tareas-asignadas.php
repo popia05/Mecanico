@@ -17,12 +17,7 @@
         <main class="contenido">
             <header class="cabecera">
                 <div class="cabecera-titulo">
-                    <h1>Tareas Asignadas</h1>
-                </div>
-                <div class="cabecera-acciones">
-                    <button><i class="fas fa-search"></i></button>
-                    <button><i class="fas fa-bell"></i></button>
-                    <button><i class="fas fa-question-circle"></i></button>
+                   
                 </div>
             </header>
 
@@ -36,15 +31,15 @@
                 <div class="tarjetas-resumen" style="grid-template-columns: repeat(3, 1fr);">
                     <div class="tarjeta-resumen">
                         <div class="tarjeta-icono naranja"><i class="fas fa-clock"></i></div>
-                        <div class="tarjeta-info"><h3>3</h3><span>Pendientes</span></div>
+                        <div class="tarjeta-info"><h3></h3><span>Pendientes</span></div>
                     </div>
                     <div class="tarjeta-resumen">
                         <div class="tarjeta-icono azul"><i class="fas fa-spinner"></i></div>
-                        <div class="tarjeta-info"><h3>2</h3><span>En Progreso</span></div>
+                        <div class="tarjeta-info"><h3></h3><span>En Progreso</span></div>
                     </div>
                     <div class="tarjeta-resumen">
                         <div class="tarjeta-icono verde"><i class="fas fa-check"></i></div>
-                        <div class="tarjeta-info"><h3>15</h3><span>Completadas</span></div>
+                        <div class="tarjeta-info"><h3></h3><span>Completadas</span></div>
                     </div>
                 </div>
 
@@ -121,7 +116,6 @@
 
             </div>
         </main>
-
     </div>
 
     <script src="../JS/menu.js"></script>

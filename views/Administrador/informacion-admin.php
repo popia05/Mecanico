@@ -1,3 +1,30 @@
+<?php
+session_start();
+
+$adminProfile = $_SESSION['admin_profile'] ?? [
+    'puesto'    => 'Jefe de Taller',
+    'status'    => 'Activo',
+    'compania'  => 'Auto Master',
+    'email'     => 'daniel@automaster.com',
+    'celular'   => '(430) 065-7387',
+    'direccion' => 'Agua Prieta, Sonora, Mx.',
+];
+
+$mensajeExito = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_admin'])) {
+    $adminProfile = [
+        'puesto'    => trim($_POST['puesto'] ?? $adminProfile['puesto']),
+        'status'    => trim($_POST['status'] ?? $adminProfile['status']),
+        'compania'  => trim($_POST['compania'] ?? $adminProfile['compania']),
+        'email'     => trim($_POST['email'] ?? $adminProfile['email']),
+        'celular'   => trim($_POST['celular'] ?? $adminProfile['celular']),
+        'direccion' => trim($_POST['direccion'] ?? $adminProfile['direccion']),
+    ];
+
+    $_SESSION['admin_profile'] = $adminProfile;
+    $mensajeExito = 'Cambios guardados exitosamente';
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -35,7 +62,7 @@
                     <i class="fas fa-chevron-down flecha" id="flecha-perfil"></i>
                 </div>
                 <div class="submenu" id="submenu-perfil">
-                    <a href="informacion.php" class="nav-item activo">
+                    <a href="informacion-admin.php" class="nav-item activo">
                         <i class="fas fa-info-circle"></i>
                         <span>Administrador</span>
                     </a>
@@ -114,46 +141,60 @@
                 <div class="tarjeta">
                     <div class="tarjeta-header">
                         <h3>Perfil de Administrador</h3>
-                        <button class="btn btn-primario">
+                        <button type="button" id="btn-editar" class="btn btn-primario" onclick="activarEdicion()">
                             <i class="fas fa-edit"></i> Editar
                         </button>
                     </div>
-                    <div class="tarjeta-body">
-                        <div style="display: flex; gap: 30px; align-items: flex-start;">
-                            <div style="text-align: center;">
-                                <div style="width: 120px; height: 120px; background: var(--rosa); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: bold; margin-bottom: 10px;">
-                                    DG
-                                </div>
-                                <h3 style="font-size: 18px;">Daniel Garcia Olivas</h3>
-                            </div>
-                            <div style="flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-                                <div class="form-grupo">
-                                    <label>Puesto</label>
-                                    <input type="text" value="Jefe de Taller" readonly style="background: var(--fondo);">
-                                </div>
-                                <div class="form-grupo">
-                                    <label>Status</label>
-                                    <input type="text" value="Activo" readonly style="background: var(--fondo);">
-                                </div>
-                                <div class="form-grupo">
-                                    <label>Compañía</label>
-                                    <input type="text" value="Auto Master" readonly style="background: var(--fondo);">
-                                </div>
-                                <div class="form-grupo">
-                                    <label>Email</label>
-                                    <input type="email" value="daniel@automaster.com" readonly style="background: var(--fondo);">
-                                </div>
-                                <div class="form-grupo">
-                                    <label>Numero de Celular</label>
-                                    <input type="text" value="(430) 065-7387" readonly style="background: var(--fondo);">
-                                </div>
-                                <div class="form-grupo">
-                                    <label>Dirección</label>
-                                    <input type="text" value="Agua Prieta, Sonora, Mx." readonly style="background: var(--fondo);">
-                                </div>
-                                
-                            </div>
+
+                    <?php if ($mensajeExito): ?>
+                        <div id="mensaje-exito" style="margin: 0 20px 20px; padding: 14px 18px; border-radius: 10px; background:#e6f8ef; color:#1f6f47; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+                            <?= htmlspecialchars($mensajeExito, ENT_QUOTES, 'UTF-8') ?>
                         </div>
+                    <?php endif; ?>
+
+                    <div class="tarjeta-body">
+                        <form method="POST" action="informacion-admin.php">
+                            <div style="display: flex; gap: 30px; align-items: flex-start;">
+                                <div style="text-align: center;">
+                                    <div style="width: 120px; height: 120px; background: var(--rosa); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: bold; margin-bottom: 10px;">
+                                        DG
+                                    </div>
+                                    <h3 style="font-size: 18px;">Daniel Garcia Olivas</h3>
+                                </div>
+                                <div style="flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                                    <div class="form-grupo">
+                                        <label>Puesto</label>
+                                        <input id="input-puesto" name="puesto" type="text" value="<?= htmlspecialchars($adminProfile['puesto'], ENT_QUOTES, 'UTF-8') ?>" readonly style="background: var(--fondo);">
+                                    </div>
+                                    <div class="form-grupo">
+                                        <label>Status</label>
+                                        <input id="input-status" name="status" type="text" value="<?= htmlspecialchars($adminProfile['status'], ENT_QUOTES, 'UTF-8') ?>" readonly style="background: var(--fondo);">
+                                    </div>
+                                    <div class="form-grupo">
+                                        <label>Compañía</label>
+                                        <input id="input-compania" name="compania" type="text" value="<?= htmlspecialchars($adminProfile['compania'], ENT_QUOTES, 'UTF-8') ?>" readonly style="background: var(--fondo);">
+                                    </div>
+                                    <div class="form-grupo">
+                                        <label>Email</label>
+                                        <input id="input-email" name="email" type="email" value="<?= htmlspecialchars($adminProfile['email'], ENT_QUOTES, 'UTF-8') ?>" readonly style="background: var(--fondo);">
+                                    </div>
+                                    <div class="form-grupo">
+                                        <label>Numero de Celular</label>
+                                        <input id="input-celular" name="celular" type="text" value="<?= htmlspecialchars($adminProfile['celular'], ENT_QUOTES, 'UTF-8') ?>" readonly style="background: var(--fondo);">
+                                    </div>
+                                    <div class="form-grupo">
+                                        <label>Dirección</label>
+                                        <input id="input-direccion" name="direccion" type="text" value="<?= htmlspecialchars($adminProfile['direccion'], ENT_QUOTES, 'UTF-8') ?>" readonly style="background: var(--fondo);">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 24px; display: none; justify-content: flex-end;" id="guardar-container">
+                                <button type="submit" name="guardar_admin" class="btn btn-primario" style="display: inline-flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-save"></i> Guardar Cambios
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
@@ -162,6 +203,17 @@
 
     </div>
 
+    <script>
+        function activarEdicion() {
+            const inputs = document.querySelectorAll('.tarjeta-body input');
+            inputs.forEach(input => {
+                input.removeAttribute('readonly');
+                input.style.background = '#ffffff';
+            });
+            document.getElementById('guardar-container').style.display = 'flex';
+            document.getElementById('btn-editar').style.display = 'none';
+        }
+    </script>
     <script src="../../js/menu.js"></script>
 </body>
 </html>

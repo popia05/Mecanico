@@ -75,19 +75,19 @@ require_once '../../php/db_conexion.php';
             <div class="tarjetas-resumen">
                 <div class="tarjeta-resumen">
                     <div class="tarjeta-icono azul"><i class="fas fa-car"></i></div>
-                    <div class="tarjeta-info"><h3>12</h3><span>Ordenes Activas</span></div>
+                    <div class="tarjeta-info"><h3></h3><span>Ordenes Activas</span></div>
                 </div>
                 <div class="tarjeta-resumen">
                     <div class="tarjeta-icono verde"><i class="fas fa-check-circle"></i></div>
-                    <div class="tarjeta-info"><h3>45</h3><span>Completadas</span></div>
+                    <div class="tarjeta-info"><h3></h3><span>Completadas</span></div>
                 </div>
                 <div class="tarjeta-resumen">
                     <div class="tarjeta-icono naranja"><i class="fas fa-clock"></i></div>
-                    <div class="tarjeta-info"><h3>3</h3><span>Pendientes</span></div>
+                    <div class="tarjeta-info"><h3></h3><span>Pendientes</span></div>
                 </div>
                 <div class="tarjeta-resumen">
                     <div class="tarjeta-icono rojo"><i class="fas fa-tools"></i></div>
-                    <div class="tarjeta-info"><h3>8</h3><span>Herramientas</span></div>
+                    <div class="tarjeta-info"><h3></h3><span>Herramientas</span></div>
                 </div>
             </div>
 

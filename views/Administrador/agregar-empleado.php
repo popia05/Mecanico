@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="sidebar-logo-texto"><h2>Menu</h2><span>Categorias</span></div>
         </div>
         <nav class="sidebar-nav">
-            <a href="panel.html" class="nav-item"><i class="fas fa-th-large"></i><span>Panel</span></a>
+            <a href="panel.php" class="nav-item"><i class="fas fa-th-large"></i><span>Panel</span></a>
             <div class="nav-item submenu-toggle" onclick="toggleSubmenu('perfil')">
                 <i class="fas fa-user"></i><span>Usuario</span>
                 <i class="fas fa-chevron-down flecha" id="flecha-perfil"></i>

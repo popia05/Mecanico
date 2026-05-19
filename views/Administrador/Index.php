@@ -32,7 +32,6 @@ $titulos = [
     'informacion-clientes'  => 'Información Clientes',
     'agregar-empleado'      => 'Agregar Empleado',
     'tareas-asignadas'      => 'Tareas Asignadas',
-    'informacion'           => 'Información',
     'editar-empleado'       => 'Editar Empleado',
 ];
 
